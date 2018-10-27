@@ -9,11 +9,8 @@
   "name": "Hexapod Mark II Leg",
   "upload": {
     "maximum_ram_size": 2048,
-    "maximum_size": 327668,
-    "upload_port": "usb",
-    "protocol": "usbasp",
-    "speed": 19200
+    "maximum_size": 32768
   },
   "url": "https://github.com/pavlenko",
-  "vendor": "Pavlenko Eugeniy"
+  "vendor": "Eugeniy Pavlenko"
 } 

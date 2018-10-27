@@ -3,6 +3,9 @@ project(hexapod-mk2-leg)
 
 include(CMakeListsPrivate.txt)
 
+# Add include directories here for each private library for proper editor highliting & navigation
+include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/ES/src")
+
 add_custom_target(
     PLATFORMIO_BUILD ALL
     COMMAND ${PLATFORMIO_CMD} -f -c clion run

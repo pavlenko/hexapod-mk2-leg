@@ -1,3 +1,5 @@
+#include <ES.h>
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
@@ -5,6 +7,11 @@
 #include <util/delay.h>
 
 volatile uint8_t timer;
+
+void toggle_port()
+{
+    PORTA = ~PORTA;
+}
 
 int main(void)
 {
@@ -25,8 +32,11 @@ int main(void)
 
     sei();
 
-    while(1)
+    ES.attach(1, toggle_port);
+
+    while(true)
     {
+        ES.dispatch();
         //PORTA |= _BV(PA0);
         //_delay_ms(1000);
         //PORTA &= ~_BV(PA0);
@@ -40,6 +50,7 @@ ISR(TIMER1_COMPA_vect)
 
     if (timer == 10) {
         timer = 0;
-        PORTA = ~PORTA;
+        //PORTA = ~PORTA;
+        ES.trigger(1);
     }
 }
