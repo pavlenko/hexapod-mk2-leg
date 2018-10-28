@@ -15,6 +15,8 @@ void Timer0Class::setClockSource(ClockSource clockSource) {
 }
 
 void Timer0Class::setInterruptHandler(Timer0Interrupt interrupt, void (*handler_ptr) ()) {
+    this->handlers[interrupt] = handler_ptr;
+
     if (handler_ptr) {
 #if defined(TIMSK0)
         TIMSK0 |= _BV(interrupt);

@@ -14,27 +14,27 @@ void toggle_port()
     PORTA = ~PORTA;
 }
 
-int main(void)
+void timer0_ovf()
+{
+    Timer0.setValue(5);
+    timer++;
+
+    if (timer == 200) {
+        timer = 0;
+        ES.trigger(1);
+    }
+}
+
+int main()
 {
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
 
-    TCCR1A = 0x00;
-    TCCR1B = _BV(WGM12)|_BV(CS12)|_BV(CS10);
-
-    TCNT1L = 0x00;
-    TCNT1H = 0x00;
-
-    OCR1AL = 0x40;
-    OCR1AH = 0x9C;
-
-    TIFR  |= _BV(OCF1A);
-    TIMSK |= _BV(OCIE1A);
+    Timer0.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    Timer0.setValue(5);
+    Timer0.setInterruptHandler(TIMER0_OVERFLOW_INTERRUPT, timer0_ovf);
 
     sei();
-
-    Timer0.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer0.setInterruptHandler(TIMER0_OVERFLOW_INTERRUPT, toggle_port);
 
     ES.attach(1, toggle_port);
 
@@ -45,16 +45,5 @@ int main(void)
         //_delay_ms(1000);
         //PORTA &= ~_BV(PA0);
         //_delay_ms(1000);
-    }
-}
-
-ISR(TIMER1_COMPA_vect)
-{
-    timer++;
-
-    if (timer == 10) {
-        timer = 0;
-        //PORTA = ~PORTA;
-        ES.trigger(1);
     }
 }
