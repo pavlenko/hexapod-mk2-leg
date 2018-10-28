@@ -39,6 +39,8 @@ enum ClockSource {
     TIMER_CLOCK_EXTERNAL_BY_RISING_EDGE
 };
 
+#if defined(TCNT0)
+
 enum Timer0Interrupt {
     TIMER0_OVERFLOW_INTERRUPT
 #if defined(OCR0A)
@@ -56,6 +58,7 @@ private:
     volatile TimerInterruptHandler_t handlers[TIMER0_INTERRUPT_COUNT];
 public:
     Timer0Class();
+
     /**
      * Set timer clock source bits
      *
@@ -94,5 +97,242 @@ public:
 };
 
 extern Timer0Class Timer0;
+
+#endif
+
+#if defined(TCNT1)
+
+enum Timer1Interrupt {
+    TIMER1_OVERFLOW_INTERRUPT
+#if defined(TIMSK1)
+    ,TIMER1_COMPARE_A_INTERRUPT
+    ,TIMER1_COMPARE_B_INTERRUPT
+#if defined(OCIE1C)
+    ,TIMER1_COMPARE_C_INTERRUPT
+#else
+    ,TIMER1_RESERVED_BIT_3
+#endif
+    ,TIMER1_RESERVED_BIT_4
+    ,TIMER1_INPUT_CAPTURE_INTERRUPT
+#elif defined(TIMSK)
+    ,TIMER1_COMPARE_B_INTERRUPT
+    ,TIMER1_COMPARE_A_INTERRUPT
+    ,TIMER1_INPUT_CAPTURE_INTERRUPT
+#endif
+    ,TIMER1_INTERRUPT_COUNT
+};
+
+class Timer1Class
+{
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER1_INTERRUPT_COUNT];
+public:
+    Timer1Class();
+
+    /**
+     * Set timer clock source bits
+     *
+     * @param clockSource
+     */
+    void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer1Interrupt interrupt, void (*handler_ptr) ());
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer1Interrupt interrupt);
+};
+
+extern Timer1Class Timer1;
+
+#endif //TCNT1
+
+#if defined(TCNT2)
+
+enum Timer2Interrupt {
+    TIMER2_OVERFLOW_INTERRUPT
+#if defined(TIMSK2)
+    ,TIMER2_COMPARE_A_INTERRUPT
+    ,TIMER2_COMPARE_B_INTERRUPT
+#elif defined(TIMSK)
+    ,TIMER2_COMPARE_INTERRUPT
+#endif
+    ,TIMER2_INTERRUPT_COUNT
+};
+
+class Timer2Class
+{
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER2_INTERRUPT_COUNT];
+public:
+    Timer2Class();
+
+    /**
+     * Set timer clock source bits
+     *
+     * @param clockSource
+     */
+    void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer2Interrupt interrupt, void (*handler_ptr) ());
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer2Interrupt interrupt);
+};
+
+extern Timer2Class Timer2;
+
+#endif //TCNT2
+
+#if defined(TCNT3)
+
+enum Timer3Interrupt {
+    TIMER3_OVERFLOW_INTERRUPT
+    ,TIMER3_INTERRUPT_COUNT
+};
+
+class Timer3Class
+{
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER3_INTERRUPT_COUNT];
+public:
+    Timer3Class();
+
+    /**
+     * Set timer clock source bits
+     *
+     * @param clockSource
+     */
+    void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer3Interrupt interrupt, void (*handler_ptr) ());
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer3Interrupt interrupt);
+};
+
+extern Timer3Class Timer3;
+
+#endif //TCNT3
+
+#if defined(TCNT4)
+
+enum Timer4Interrupt {
+    TIMER4_OVERFLOW_INTERRUPT
+    ,TIMER4_COMPARE_A_INTERRUPT
+    ,TIMER4_COMPARE_B_INTERRUPT
+    ,TIMER4_COMPARE_C_INTERRUPT
+    ,TIMER4_RESERVED_BIT_4
+    ,TIMER4_INPUT_CAPTURE_INTERRUPT
+    ,TIMER4_INTERRUPT_COUNT
+};
+
+class Timer4Class
+{
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER4_INTERRUPT_COUNT];
+public:
+    Timer4Class();
+
+    /**
+     * Set timer clock source bits
+     *
+     * @param clockSource
+     */
+    void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer4Interrupt interrupt, void (*handler_ptr) ());
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer4Interrupt interrupt);
+};
+
+extern Timer4Class Timer4;
+
+#endif //TCNT4
+
+#if defined(TCNT5)
+
+enum Timer5Interrupt {
+    TIMER5_OVERFLOW_INTERRUPT
+    ,TIMER5_COMPARE_A_INTERRUPT
+    ,TIMER5_COMPARE_B_INTERRUPT
+    ,TIMER5_COMPARE_C_INTERRUPT
+    ,TIMER5_RESERVED_BIT_4
+    ,TIMER5_INPUT_CAPTURE_INTERRUPT
+    ,TIMER5_INTERRUPT_COUNT
+};
+
+class Timer5Class
+{
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER5_INTERRUPT_COUNT];
+public:
+    Timer5Class();
+    /**
+     * Set timer clock source bits
+     *
+     * @param clockSource
+     */
+    void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer5Interrupt interrupt, void (*handler_ptr) ());
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer5Interrupt interrupt);
+};
+
+extern Timer5Class Timer5;
+
+#endif //TCNT5
 
 #endif //TIMER_H
