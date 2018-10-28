@@ -5,6 +5,7 @@ include(CMakeListsPrivate.txt)
 
 # Add include directories here for each private library for proper editor highliting & navigation
 include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/ES/src")
+include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/Timer/src")
 
 add_custom_target(
     PLATFORMIO_BUILD ALL

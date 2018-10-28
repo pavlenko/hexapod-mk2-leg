@@ -1,4 +1,5 @@
 #include <ES.h>
+#include <Timer.h>
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -31,6 +32,8 @@ int main(void)
     TIMSK |= _BV(OCIE1A);
 
     sei();
+
+    Timer0.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
 
     ES.attach(1, toggle_port);
 
