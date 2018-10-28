@@ -34,6 +34,7 @@ int main(void)
     sei();
 
     Timer0.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    Timer0.setInterruptHandler(TIMER0_OVERFLOW_INTERRUPT, toggle_port);
 
     ES.attach(1, toggle_port);
 

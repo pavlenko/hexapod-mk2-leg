@@ -26,6 +26,8 @@
 
 #define TIMER_CLOCK_MASK 0b11111000
 
+typedef void (*TimerInterruptHandler_t) ();
+
 enum ClockSource {
     TIMER_CLOCK_NONE,
     TIMER_CLOCK_NO_DIVIDE,
@@ -37,15 +39,22 @@ enum ClockSource {
     TIMER_CLOCK_EXTERNAL_BY_RISING_EDGE
 };
 
-// TODO enable interrupts by compare (a/b) and overflow
+enum Timer0Interrupt {
+    TIMER0_OVERFLOW_INTERRUPT
+#if defined(OCR0A)
+    ,TIMER0_COMPARE_A_INTERRUPT
+    ,TIMER0_COMPARE_B_INTERRUPT
+#elif defined(OCR0)
+    ,TIMER0_COMPARE_INTERRUPT
+#endif
+    ,TIMER0_INTERRUPT_COUNT
+};
+
 class Timer0Class
 {
+private:
+    volatile TimerInterruptHandler_t handlers[TIMER0_INTERRUPT_COUNT];
 public:
-    /**
-     * Overflow interrupt handler
-     */
-    void (*onOverflow) ();
-
     Timer0Class();
     /**
      * Set timer clock source bits
@@ -53,6 +62,14 @@ public:
      * @param clockSource
      */
     void setClockSource(ClockSource clockSource);
+
+    /**
+     * Set or clear interrupt handler for specific interrupt
+     *
+     * @param interrupt
+     * @param handler_ptr
+     */
+    void setInterruptHandler(Timer0Interrupt interrupt, void (*handler_ptr) ());
 
     /**
      * Get timer value
@@ -67,6 +84,13 @@ public:
      * @param value
      */
     void setValue(uint8_t value);
+
+    /**
+     * Trigger specific interrupt handler
+     *
+     * @param interrupt
+     */
+    void triggerInterrupt(Timer0Interrupt interrupt);
 };
 
 extern Timer0Class Timer0;
