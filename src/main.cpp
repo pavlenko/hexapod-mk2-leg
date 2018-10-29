@@ -1,5 +1,5 @@
 #include <ES.h>
-#include <Timer.h>
+#include <Timer0.h>
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -30,7 +30,7 @@ int main()
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
 
-    Timer0.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    Timer0.setClockSource(TIMER0_CLOCK_DIVIDE_BY_8);
     Timer0.setValue(5);
     Timer0.setInterruptHandler(TIMER0_OVERFLOW_INTERRUPT, timer0_ovf);
 
