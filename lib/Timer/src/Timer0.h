@@ -8,9 +8,8 @@
 #error "Current CPU does not support timer 0"
 #endif
 
-//TODO not all processor support CTC in timer 0
-#ifndef TIMER0_ENABLE_CTC
-#define TIMER0_ENABLE_CTC 1
+#if defined(TIMER0_ENABLE_CTC) && !(defined(OCR0) || defined(OCR0A))
+#error "Current CPU does not support CTC mode for timer 0"
 #endif
 
 #define TIMER0_CLOCK_MASK 0b11111000
@@ -30,12 +29,14 @@ enum Timer0ClockSource {
 
 enum Timer0Interrupt {
     TIMER0_OVERFLOW_INTERRUPT
+#if defined(TIMER0_ENABLE_CTC)
 #if defined(OCR0A)
     ,TIMER0_COMPARE_INTERRUPT
     ,TIMER0_COMPARE_B_INTERRUPT
 #elif defined(OCR0)
     ,TIMER0_COMPARE_INTERRUPT
 #endif
+#endif //TIMER0_ENABLE_CTC
     ,TIMER0_INTERRUPT_COUNT
 };
 

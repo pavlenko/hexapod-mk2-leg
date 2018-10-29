@@ -52,6 +52,8 @@ ISR(TIMER0_OVF_vect){
     Timer0.triggerInterrupt(TIMER0_OVERFLOW_INTERRUPT);
 }
 
+#if defined(TIMER0_ENABLE_CTC)
+
 #if defined(OCIE0A)
 
 ISR(TIMER0_COMPA_vect){
@@ -67,5 +69,7 @@ ISR(TIMER0_COMPB_vect){
 ISR(TIMER0_COMP_vect){
     Timer0.triggerInterrupt(TIMER0_COMPARE_INTERRUPT);
 }
+
+#endif
 
 #endif
