@@ -1,7 +1,7 @@
 {
-  "name": "Timer",
-  "description": "Timers abstraction layer",
-  "keywords": "event system",
+  "name": "ServoMotor",
+  "description": "ServoMotor driver",
+  "keywords": "servo",
   "authors": {
     "name": "Eugeniy Pavlenko",
     "email": "pavlenko.obs@gmail.com",

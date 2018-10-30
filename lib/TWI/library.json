@@ -1,7 +1,7 @@
 {
-  "name": "Timer",
-  "description": "Timers abstraction layer",
-  "keywords": "event system",
+  "name": "TWI",
+  "description": "Two wire interface abstration layer",
+  "keywords": "two wire, i2c",
   "authors": {
     "name": "Eugeniy Pavlenko",
     "email": "pavlenko.obs@gmail.com",
