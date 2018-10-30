@@ -4,62 +4,6 @@
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
 
-#if defined(TCNT1)
-
-Timer1Class::Timer1Class() = default;
-
-void Timer1Class::setClockSource(ClockSource clockSource) {
-    TCCR1B = (uint8_t) ((TCCR1B & TIMER_CLOCK_MASK) | clockSource);
-}
-
-void Timer1Class::setInterruptHandler(Timer1Interrupt interrupt, void (*handler_ptr) ()) {
-    this->handlers[interrupt] = handler_ptr;
-
-    if (handler_ptr) {
-#if defined(TIMSK1)
-        TIMSK1 |= _BV(interrupt);
-#elif defined(TIMSK)
-        TIMSK |= _BV(interrupt + 2);
-#endif
-    } else {
-#if defined(TIMSK1)
-        TIMSK1 &= ~_BV(interrupt);
-#elif defined(TIMSK)
-        TIMSK &= ~_BV(interrupt + 2);
-#endif
-    }
-}
-
-void Timer1Class::triggerInterrupt(Timer1Interrupt interrupt) {
-    if (this->handlers[interrupt]) {
-        this->handlers[interrupt]();
-    }
-}
-
-Timer1Class Timer1;
-
-ISR(TIMER1_OVF_vect){
-    Timer1.triggerInterrupt(TIMER1_OVERFLOW_INTERRUPT);
-}
-
-ISR(TIMER1_COMPA_vect){
-    Timer1.triggerInterrupt(TIMER1_COMPARE_A_INTERRUPT);
-}
-
-ISR(TIMER1_COMPB_vect){
-    Timer1.triggerInterrupt(TIMER1_COMPARE_B_INTERRUPT);
-}
-
-#if defined(TIMER1_COMPC_vect)
-
-ISR(TIMER1_COMPC_vect){
-    Timer1.triggerInterrupt(TIMER1_COMPARE_C_INTERRUPT);
-}
-
-#endif //TIMER1_COMPC_vect
-
-#endif //TCNT1
-
 #if defined(TCNT2)
 
 Timer2Class::Timer2Class() = default;

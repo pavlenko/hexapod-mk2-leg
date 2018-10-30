@@ -39,62 +39,6 @@ enum ClockSource {
     TIMER_CLOCK_EXTERNAL_BY_RISING_EDGE
 };
 
-#if defined(TCNT1)
-
-enum Timer1Interrupt {
-    TIMER1_OVERFLOW_INTERRUPT
-#if defined(TIMSK1)
-    ,TIMER1_COMPARE_A_INTERRUPT
-    ,TIMER1_COMPARE_B_INTERRUPT
-#if defined(OCIE1C)
-    ,TIMER1_COMPARE_C_INTERRUPT
-#else
-    ,TIMER1_RESERVED_BIT_3
-#endif
-    ,TIMER1_RESERVED_BIT_4
-    ,TIMER1_INPUT_CAPTURE_INTERRUPT
-#elif defined(TIMSK)
-    ,TIMER1_COMPARE_B_INTERRUPT
-    ,TIMER1_COMPARE_A_INTERRUPT
-    ,TIMER1_INPUT_CAPTURE_INTERRUPT
-#endif
-    ,TIMER1_INTERRUPT_COUNT
-};
-
-class Timer1Class
-{
-private:
-    volatile TimerInterruptHandler_t handlers[TIMER1_INTERRUPT_COUNT];
-public:
-    Timer1Class();
-
-    /**
-     * Set timer clock source bits
-     *
-     * @param clockSource
-     */
-    void setClockSource(ClockSource clockSource);
-
-    /**
-     * Set or clear interrupt handler for specific interrupt
-     *
-     * @param interrupt
-     * @param handler_ptr
-     */
-    void setInterruptHandler(Timer1Interrupt interrupt, void (*handler_ptr) ());
-
-    /**
-     * Trigger specific interrupt handler
-     *
-     * @param interrupt
-     */
-    void triggerInterrupt(Timer1Interrupt interrupt);
-};
-
-extern Timer1Class Timer1;
-
-#endif //TCNT1
-
 #if defined(TCNT2)
 
 enum Timer2Interrupt {
