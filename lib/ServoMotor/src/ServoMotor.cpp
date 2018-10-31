@@ -5,11 +5,10 @@
 
 #define SERVOMOTOR_TOTAL 10 //TODO
 
-//TODO calculate ticks per microsecond
-#define clockCyclesPerMicrosecond() (F_CPU / 1000000L)
-
-#define US_TO_TICKS(_val_) (_val_)
-#define TICKS_TO_US(_val_) (_val_)
+//TODO check dependency of timers prescaller
+#define TICKS_PER_US() (F_CPU / 1000000L)
+#define US_TO_TICKS(_val_) ((uint16_t) (_val_ * TICKS_PER_US()))
+#define TICKS_TO_US(_val_) ((uint16_t) (_val_ / TICKS_PER_US()))
 
 typedef struct {
     uint8_t number: 3;
@@ -24,6 +23,11 @@ typedef struct {
 
 static volatile uint8_t count = 0;
 static volatile servo_t servos[SERVOMOTOR_TOTAL];
+
+//TODO find faster way
+long map(long x, long in_min, long in_max, long out_min, long out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 ServoMotor::ServoMotor() {
     if (count < SERVOMOTOR_TOTAL) {
