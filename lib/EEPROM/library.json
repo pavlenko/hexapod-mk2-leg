@@ -1,0 +1,15 @@
+{
+  "name": "EEPROM",
+  "description": "EEPROM helper library to replace usage of <avr/eeprom.h> functions",
+  "keywords": "EEPROM",
+  "authors": {
+    "name": "Eugeniy Pavlenko",
+    "email": "pavlenko.obs@gmail.com",
+    "url": "https://github.com/pavlenko"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavlenko/hexapod-mk2-leg.git"
+  },
+  "version": "1.0.0"
+}
