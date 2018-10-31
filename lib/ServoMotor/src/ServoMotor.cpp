@@ -24,7 +24,6 @@ typedef struct {
 static volatile uint8_t count = 0;
 static volatile servo_t servos[SERVOMOTOR_TOTAL];
 
-//TODO find faster way
 long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -48,7 +47,6 @@ uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, ui
         servos[this->index].pin.number   = pin;
         servos[this->index].pin.attached = 1;
 
-        //TODO maybe store this values in servos struct
         this->min = min;
         this->max = max;
     }
@@ -76,12 +74,12 @@ void ServoMotor::setMAX(uint16_t value) {
     this->max = value;
 }
 
-uint16_t ServoMotor::getDegree() {
-    //TODO map us to angle
+uint16_t ServoMotor::getAngle() {
+    return (uint16_t) map(this->getMicroseconds(), this->min, this->max, 0, 180);
 }
 
-void ServoMotor::setDegree(uint16_t value) {
-    //TODO map angle to us
+void ServoMotor::setAngle(uint16_t value) {
+    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max));
 }
 
 uint16_t ServoMotor::getMicroseconds() {

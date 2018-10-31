@@ -76,14 +76,14 @@ public:
      *
      * @return
      */
-    uint16_t getDegree();
+    uint16_t getAngle();
 
     /**
      * Set angle as degree
      *
      * @param angle
      */
-    void setDegree(uint16_t value);
+    void setAngle(uint16_t value);
 
     /**
      * Get angle as microseconds
