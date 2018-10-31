@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define SERVOMOTOR_INVALID 255
+
 //TODO min/max calibration
 class ServoMotor
 {
