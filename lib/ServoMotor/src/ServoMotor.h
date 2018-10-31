@@ -3,13 +3,18 @@
 
 #include <stdint.h>
 
+#define SERVOMOTOR_PULSE_MIN 544
+#define SERVOMOTOR_PULSE_MID 1472
+#define SERVOMOTOR_PULSE_MAX 2400
+
 #define SERVOMOTOR_INVALID 255
 
-//TODO min/max calibration
 class ServoMotor
 {
 private:
     uint8_t index;
+    uint16_t min;
+    uint16_t max;
 public:
     ServoMotor();
 
@@ -23,23 +28,48 @@ public:
     uint8_t attach(volatile uint8_t *port, uint8_t pin);
 
     /**
+     * Attach servomotor to PIN of specific PORT and define limits
+     *
+     * @param port
+     * @param pin
+     * @param min
+     * @param max
+     * @return
+     */
+    uint8_t attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max);
+
+    /**
      * Detach servomotor
      */
     void detach();
 
     /**
-     * Get angle as microseconds
+     * Get calibration minimal ticks
      *
      * @return
      */
-    uint16_t getMicroseconds();
+    uint16_t getMIN();
 
     /**
-     * Set angle as microseconds
+     * Set calibration minimal ticks
      *
-     * @param value
+     * @return
      */
-    void setMicroseconds(uint16_t value);
+    void setMIN(uint16_t value);
+
+    /**
+     * Get calibration maximum ticks
+     *
+     * @return
+     */
+    uint16_t getMAX();
+
+    /**
+     * Set calibration maximum ticks
+     *
+     * @return
+     */
+    void setMAX(uint16_t);
 
     /**
      * Get angle as degree
@@ -54,6 +84,20 @@ public:
      * @param angle
      */
     void setDegree(uint16_t value);
+
+    /**
+     * Get angle as microseconds
+     *
+     * @return
+     */
+    uint16_t getMicroseconds();
+
+    /**
+     * Set angle as microseconds
+     *
+     * @param value
+     */
+    void setMicroseconds(uint16_t value);
 };
 
 #endif //SERVOMOTOR_H

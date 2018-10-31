@@ -27,11 +27,19 @@ ServoMotor::ServoMotor() {
 }
 
 uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin) {
+    return this->attach(port, pin, SERVOMOTOR_PULSE_MIN, SERVOMOTOR_PULSE_MAX);
+}
+
+uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
     if (this->index != SERVOMOTOR_INVALID) {
         servos[this->index].port = port;
 
         servos[this->index].pin.number   = pin;
         servos[this->index].pin.attached = 1;
+
+        //TODO maybe store this values in servos struct
+        this->min = min;
+        this->max = max;
     }
 
     return this->index;
@@ -41,11 +49,19 @@ void ServoMotor::detach() {
     servos[this->index].pin.attached = 0;
 }
 
-uint16_t ServoMotor::getMicroseconds() {
+uint16_t ServoMotor::getMIN() {
     //TODO
 }
 
-void ServoMotor::setMicroseconds(uint16_t value) {
+void ServoMotor::setMIN(uint16_t value) {
+    //TODO
+}
+
+uint16_t ServoMotor::getMAX() {
+    //TODO
+}
+
+void ServoMotor::setMAX(uint16_t) {
     //TODO
 }
 
@@ -55,4 +71,12 @@ uint16_t ServoMotor::getDegree() {
 
 void ServoMotor::setDegree(uint16_t value) {
 
+}
+
+uint16_t ServoMotor::getMicroseconds() {
+    //TODO
+}
+
+void ServoMotor::setMicroseconds(uint16_t value) {
+    //TODO
 }
