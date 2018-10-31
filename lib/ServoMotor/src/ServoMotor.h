@@ -69,7 +69,7 @@ public:
      *
      * @return
      */
-    void setMAX(uint16_t);
+    void setMAX(uint16_t value);
 
     /**
      * Get angle as degree

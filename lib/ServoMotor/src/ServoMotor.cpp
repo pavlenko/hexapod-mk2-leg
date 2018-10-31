@@ -1,8 +1,15 @@
 #include "ServoMotor.h"
 
+#include <util/atomic.h>
 #include <stdint.h>
 
 #define SERVOMOTOR_TOTAL 10 //TODO
+
+//TODO calculate ticks per microsecond
+#define clockCyclesPerMicrosecond() (F_CPU / 1000000L)
+
+#define US_TO_TICKS(_val_) (_val_)
+#define TICKS_TO_US(_val_) (_val_)
 
 typedef struct {
     uint8_t number: 3;
@@ -50,33 +57,43 @@ void ServoMotor::detach() {
 }
 
 uint16_t ServoMotor::getMIN() {
-    //TODO
+    return this->min;
 }
 
 void ServoMotor::setMIN(uint16_t value) {
-    //TODO
+    this->min = value;
 }
 
 uint16_t ServoMotor::getMAX() {
-    //TODO
+    return this->max;
 }
 
-void ServoMotor::setMAX(uint16_t) {
-    //TODO
+void ServoMotor::setMAX(uint16_t value) {
+    this->max = value;
 }
 
 uint16_t ServoMotor::getDegree() {
-    //TODO
+    //TODO map us to angle
 }
 
 void ServoMotor::setDegree(uint16_t value) {
-
+    //TODO map angle to us
 }
 
 uint16_t ServoMotor::getMicroseconds() {
-    //TODO
+    if (this->index != SERVOMOTOR_INVALID) {
+        return TICKS_TO_US(servos[this->index].ticks);
+    } else {
+        return 0;
+    }
 }
 
 void ServoMotor::setMicroseconds(uint16_t value) {
-    //TODO
+    if (this->index != SERVOMOTOR_INVALID) {
+        uint16_t ticks = US_TO_TICKS(value);
+
+        ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
+            servos[this->index].ticks = ticks;
+        }
+    }
 }
