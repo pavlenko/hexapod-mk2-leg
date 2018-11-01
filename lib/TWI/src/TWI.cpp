@@ -10,6 +10,13 @@ static volatile uint8_t error;
 static void (*onReceiveHandler) ();
 static void (*onRequestHandler) ();
 
+static uint8_t txBufferData[TWI_BUFFER_LENGTH];
+static volatile uint8_t txBufferIndex;
+static volatile uint8_t txBufferLength;
+
+static uint8_t rxBufferData[TWI_BUFFER_LENGTH];
+static volatile uint8_t rxBufferIndex;
+
 void TWIClass::setOnReceiveHandler(void (*handler_ptr) ()) {
     onReceiveHandler = handler_ptr;
 }
@@ -104,20 +111,19 @@ ISR(TWI_vect)
         case TW_SR_GCALL_ACK: // addressed generally, returned ack
         case TW_SR_ARB_LOST_SLA_ACK:   // lost arbitration, returned ack
         case TW_SR_ARB_LOST_GCALL_ACK: // lost arbitration, returned ack
-            // enter slave receiver mode
             state = TWI_STATE_SLAVE_RX;
             // indicate that rx buffer can be overwritten and ack
-            twi_rxBufferIndex = 0;
+            rxBufferIndex = 0;
             twi_reply(1);
             break;
         case TW_SR_DATA_ACK:       // data received, returned ack
         case TW_SR_GCALL_DATA_ACK: // data received generally, returned ack
             // if there is still room in the rx buffer
-            if(twi_rxBufferIndex < TWI_BUFFER_LENGTH){
+            if (rxBufferIndex < TWI_BUFFER_LENGTH){
                 // put byte in buffer and ack
-                twi_rxBuffer[twi_rxBufferIndex++] = TWDR;
+                rxBufferData[rxBufferIndex++] = TWDR;
                 twi_reply(1);
-            }else{
+            } else {
                 // otherwise nack
                 twi_reply(0);
             }
@@ -126,15 +132,15 @@ ISR(TWI_vect)
             // ack future responses and leave slave receiver state
             twi_releaseBus();
             // put a null char after data if there's room
-            if(twi_rxBufferIndex < TWI_BUFFER_LENGTH){
-                twi_rxBuffer[twi_rxBufferIndex] = '\0';
+            if (rxBufferIndex < TWI_BUFFER_LENGTH) {
+                rxBufferData[rxBufferIndex] = '\0';//TODO check if this is needed
             }
             // callback to user defined callback
             if (onReceiveHandler) {
-                onReceiveHandler(twi_rxBuffer, twi_rxBufferIndex);
+                onReceiveHandler(rxBufferData, rxBufferIndex);
             }
-            // since we submit rx buffer to "wire" library, we can reset it
-            twi_rxBufferIndex = 0;
+
+            rxBufferIndex = 0;
             break;
         case TW_SR_DATA_NACK:       // data received, returned nack
         case TW_SR_GCALL_DATA_NACK: // data received generally, returned nack
@@ -145,30 +151,27 @@ ISR(TWI_vect)
         // Slave Transmitter
         case TW_ST_SLA_ACK:          // addressed, returned ack
         case TW_ST_ARB_LOST_SLA_ACK: // arbitration lost, returned ack
-            // enter slave transmitter mode
             state = TWI_STATE_SLAVE_TX;
-            // ready the tx buffer index for iteration
-            twi_txBufferIndex = 0;
-            // set tx buffer length to be zero, to verify if user changes it
-            twi_txBufferLength = 0;
-            // request for txBuffer to be filled and length to be set
-            // note: user must call twi_transmit(bytes, length) to do this
+
+            txBufferIndex  = 0;
+            txBufferLength = 0;
+
             if (onRequestHandler) {
+                // Call user function to fill tx buffer (via TWI.transmit(data, length))
                 onRequestHandler();
             }
-            // if they didn't change buffer & length, initialize it
-            if(0 == twi_txBufferLength){
-                twi_txBufferLength = 1;
-                twi_txBuffer[0] = 0x00;
+
+            if (0 == txBufferLength) {
+                // If buffer empty - fill empty response as fallback
+                txBufferLength = 1;
+                txBufferData[0] = 0x00;
             }
-            // transmit first byte from buffer, fall
         case TW_ST_DATA_ACK: // byte sent, ack returned
-            // copy data to output register
-            TWDR = twi_txBuffer[twi_txBufferIndex++];
+            TWDR = txBufferData[txBufferIndex++];
             // if there is more to send, ack, otherwise nack
-            if(twi_txBufferIndex < twi_txBufferLength){
+            if (txBufferIndex < txBufferLength){
                 twi_reply(1);
-            }else{
+            } else {
                 twi_reply(0);
             }
             break;
@@ -176,7 +179,6 @@ ISR(TWI_vect)
         case TW_ST_LAST_DATA: // received ack, but we are done already!
             // ack future responses
             twi_reply(1);
-            // leave slave receiver state
             state = TWI_STATE_READY;
             break;
 #endif
