@@ -24,9 +24,26 @@ static volatile uint8_t txBufferLength;
 
 static uint8_t rxBufferData[TWI_BUFFER_LENGTH];
 static volatile uint8_t rxBufferIndex;
+static volatile uint8_t rxBufferLength;
 
 void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
+}
+
+uint8_t TWIClass::read() {
+    uint8_t value = 0;
+
+    if (rxBufferIndex < rxBufferLength) {
+        value = rxBufferData[rxBufferIndex++];
+    }
+
+    return value;
+}
+
+void TWIClass::read(uint8_t *data, uint8_t length) {
+    for (uint8_t i = 0; i < length; i++) {
+        data[i] = this->read();
+    }
 }
 
 void TWIClass::write(uint8_t data) {

@@ -2,7 +2,7 @@
 
 void onTransmit() {
     // Do something on transmission complete
-    TWI.receive();
+    TWI.receive(0xFF, 4, onReceive);
 }
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
     TWI.write(TWI_FLOAT {.value = 2.2f});
 
     // Trigger transmission process
-    TWI.transmit();
+    TWI.transmit(0xFF, onTransmit);
 }
 
 /*#include <Wire.h>

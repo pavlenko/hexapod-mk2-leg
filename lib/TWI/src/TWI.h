@@ -48,6 +48,9 @@ public:
      */
     void setAddress(uint8_t address);
 
+    uint8_t read();
+    void read(uint8_t *data, uint8_t length);
+
     /**
      * Write byte to TX buffer
      *
