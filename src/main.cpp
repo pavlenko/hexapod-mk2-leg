@@ -1,5 +1,6 @@
 #include <ES.h>
 #include <Timer0.h>
+#include <TWI.h>
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -29,6 +30,8 @@ int main()
 {
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
+
+    TWI.setOnRequestHandler(timer0_ovf);
 
     Timer0.setClockSource(TIMER0_CLOCK_DIVIDE_BY_8);
     Timer0.setValue(5);
