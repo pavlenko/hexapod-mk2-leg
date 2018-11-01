@@ -1,6 +1,8 @@
 #ifndef TWI_H
 #define TWI_H
 
+#include <stdint.h>
+
 #ifndef TWI_BUFFER_LENGTH
 #define TWI_BUFFER_LENGTH 32
 #endif
@@ -23,11 +25,18 @@ class TWIClass
 {
 public:
     /**
+     * Set slave address
+     *
+     * @param address
+     */
+    void listenTo(uint8_t address);
+
+    /**
      * Set handler for slave receive data completed event
      *
      * @param handler_ptr
      */
-    void setOnReceiveHandler(void (*handler_ptr) ());
+    void setOnReceiveHandler(void (*handler_ptr) (uint8_t *data, uint8_t length));
 
     /**
      * Set handler for slave transmit data requested event

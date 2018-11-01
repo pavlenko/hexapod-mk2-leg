@@ -7,7 +7,7 @@
 static volatile uint8_t state;
 static volatile uint8_t error;
 
-static void (*onReceiveHandler) ();
+static void (*onReceiveHandler) (uint8_t *data, uint8_t length);
 static void (*onRequestHandler) ();
 
 static uint8_t txBufferData[TWI_BUFFER_LENGTH];
@@ -17,7 +17,11 @@ static volatile uint8_t txBufferLength;
 static uint8_t rxBufferData[TWI_BUFFER_LENGTH];
 static volatile uint8_t rxBufferIndex;
 
-void TWIClass::setOnReceiveHandler(void (*handler_ptr) ()) {
+void TWIClass::listenTo(uint8_t address) {
+    TWAR = address << 1;
+}
+
+void TWIClass::setOnReceiveHandler(void (*handler_ptr) (uint8_t *, uint8_t)) {
     onReceiveHandler = handler_ptr;
 }
 

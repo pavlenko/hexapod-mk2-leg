@@ -1,16 +1,17 @@
-// Wire Slave Receiver
-// by Nicholas Zambetti <http://www.zambetti.com>
+#include <TWI.h>
 
-// Demonstrates use of the Wire library
-// Receives data as an I2C/TWI slave device
-// Refer to the "Wire Master Writer" example for use with this
+#include <stdint.h>
 
-// Created 29 March 2006
+void onReceive(uint8_t *data, uint8_t length) {
+    // Do something with received data
+}
 
-// This example code is in the public domain.
+int main() {
+    TWI.listenTo(0x0F);
+    TWI.setOnReceiveHandler(onReceive);
+}
 
-
-#include <Wire.h>
+/*#include <Wire.h>
 
 void setup() {
   Wire.begin(8);                // join i2c bus with address #8
@@ -31,4 +32,4 @@ void receiveEvent(int howMany) {
   }
   int x = Wire.read();    // receive byte as an integer
   Serial.println(x);         // print the integer
-}
+}*/
