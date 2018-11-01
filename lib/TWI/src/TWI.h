@@ -29,7 +29,28 @@ public:
      *
      * @param address
      */
-    void listenTo(uint8_t address);
+    void setAddress(uint8_t address);
+
+    /**
+     * Receive data from slave
+     *
+     * TODO maybe use on receive handler for non-block read
+     *
+     * @param address
+     * @param length
+     */
+    void receive(uint8_t address, uint8_t length);
+
+    /**
+     * Send data to slave
+     *
+     * TODO maybe use on transmit handler for non-block send complete callback
+     *
+     * @param address
+     * @param data
+     * @param length
+     */
+    void transmit(uint8_t address, uint8_t *data, uint8_t length);
 
     /**
      * Set handler for slave receive data completed event

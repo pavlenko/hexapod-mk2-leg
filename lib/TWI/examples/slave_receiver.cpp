@@ -4,10 +4,11 @@
 
 void onReceive(uint8_t *data, uint8_t length) {
     // Do something with received data
+    TWI.transmit([0], 1);
 }
 
 int main() {
-    TWI.listenTo(0x0F);
+    TWI.setAddress(0x0F);
     TWI.setOnReceiveHandler(onReceive);
 }
 

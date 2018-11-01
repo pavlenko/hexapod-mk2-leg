@@ -24,8 +24,16 @@ static volatile uint8_t txBufferLength;
 static uint8_t rxBufferData[TWI_BUFFER_LENGTH];
 static volatile uint8_t rxBufferIndex;
 
-void TWIClass::listenTo(uint8_t address) {
+void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
+}
+
+void TWIClass::receive(uint8_t address, uint8_t length) {
+    //TODO
+}
+
+void TWIClass::transmit(uint8_t address, uint8_t *data, uint8_t length) {
+    //TODO
 }
 
 void TWIClass::setOnReceiveHandler(void (*handler_ptr) (uint8_t *, uint8_t)) {
