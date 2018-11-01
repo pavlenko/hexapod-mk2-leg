@@ -29,6 +29,33 @@ void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
 }
 
+void TWIClass::write(uint8_t data) {
+    if (txBufferLength < TWI_BUFFER_LENGTH) {
+        txBufferData[txBufferIndex] = data;
+
+        txBufferIndex++;
+        txBufferLength++;
+    }
+}
+
+void TWIClass::write(TWI_WORD data) {
+    this->write(data.bytes, 2);
+}
+
+void TWIClass::write(TWI_DWORD data) {
+    this->write(data.bytes, 4);
+}
+
+void TWIClass::write(TWI_FLOAT data) {
+    this->write(data.bytes, 4);
+}
+
+void TWIClass::write(uint8_t *data, uint8_t length) {
+    for (uint8_t i = 0; i < length; i++) {
+        this->write(data[i]);
+    }
+}
+
 void TWIClass::receive(uint8_t address, uint8_t length) {
     //TODO
 }

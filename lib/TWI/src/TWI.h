@@ -2,6 +2,7 @@
 #define TWI_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifndef TWI_BUFFER_LENGTH
 #define TWI_BUFFER_LENGTH 32
@@ -21,6 +22,22 @@
 #define TWI_STATE_SLAVE_RX  3
 #define TWI_STATE_SLAVE_TX  4
 
+//TODO maybe move unions to cpp for private visibility
+typedef union {
+    uint16_t value;
+    uint8_t bytes[2];
+} TWI_WORD;
+
+typedef union {
+    uint32_t value;
+    uint8_t bytes[4];
+} TWI_DWORD;
+
+typedef union {
+    float value;
+    uint8_t bytes[4];
+} TWI_FLOAT;
+
 class TWIClass
 {
 public:
@@ -30,6 +47,48 @@ public:
      * @param address
      */
     void setAddress(uint8_t address);
+
+    /**
+     * Write byte to TX buffer
+     *
+     * @param data
+     */
+    void write(uint8_t data);
+
+    /**
+     * Write uint16_t to TX buffer
+     *
+     * @attention EXPERIMENTAL
+     *
+     * @param data
+     */
+    void write(TWI_WORD data);
+
+    /**
+     * Write uint32_t to TX buffer
+     *
+     * @attention EXPERIMENTAL
+     *
+     * @param data
+     */
+    void write(TWI_DWORD data);
+
+    /**
+     * Write float to TX buffer
+     *
+     * @attention EXPERIMENTAL
+     *
+     * @param data
+     */
+    void write(TWI_FLOAT data);
+
+    /**
+     * Write bytes array to TX buffer
+     *
+     * @param data
+     * @param length
+     */
+    void write(uint8_t *data, uint8_t length);
 
     /**
      * Receive data from slave
