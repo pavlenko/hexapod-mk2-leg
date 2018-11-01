@@ -5,8 +5,8 @@
 #include <avr/sfr_defs.h>
 #include <util/twi.h>
 
-#define TWI_SEND_START() (TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN) | _BV(TWIE))
-#define TWI_SEND_STOP()  (TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN) | _BV(TWIE))
+#define TWI_SEND_START() (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA))
+#define TWI_SEND_STOP()  (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTO))
 #define TWI_SEND_ACK()   (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWEA))
 #define TWI_SEND_NACK()  (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE))
 //#define TWISendTransmit() (TWCR = _BV(1<<TWINT)|_BV(1<<TWEN)|_BV(1<<TWIE))
