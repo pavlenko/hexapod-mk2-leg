@@ -14,6 +14,7 @@
 static volatile uint8_t state;
 static volatile uint8_t error;
 
+static void (*onTransmitHandler) ();
 static void (*onReceiveHandler) (uint8_t *data, uint8_t length);
 static void (*onRequestHandler) ();
 
@@ -34,6 +35,10 @@ void TWIClass::receive(uint8_t address, uint8_t length) {
 
 void TWIClass::transmit(uint8_t address, uint8_t *data, uint8_t length) {
     //TODO
+}
+
+void TWIClass::setOnTransmitHandler(void (*handler_ptr) ()) {
+    onTransmitHandler = handler_ptr;
 }
 
 void TWIClass::setOnReceiveHandler(void (*handler_ptr) (uint8_t *, uint8_t)) {

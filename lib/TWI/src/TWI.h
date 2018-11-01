@@ -53,6 +53,13 @@ public:
     void transmit(uint8_t address, uint8_t *data, uint8_t length);
 
     /**
+     * Set handler for master transmit data completed event
+     *
+     * @param handler_ptr
+     */
+    void setOnTransmitHandler(void (*handler_ptr) ());
+
+    /**
      * Set handler for slave receive data completed event
      *
      * @param handler_ptr
