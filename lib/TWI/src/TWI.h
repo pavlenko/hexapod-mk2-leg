@@ -22,22 +22,6 @@
 #define TWI_STATE_SLAVE_RX  3
 #define TWI_STATE_SLAVE_TX  4
 
-//TODO maybe move unions to cpp for private visibility
-typedef union {
-    uint16_t value;
-    uint8_t bytes[2];
-} TWI_WORD;
-
-typedef union {
-    uint32_t value;
-    uint8_t bytes[4];
-} TWI_DWORD;
-
-typedef union {
-    float value;
-    uint8_t bytes[4];
-} TWI_FLOAT;
-
 class TWIClass
 {
 public:

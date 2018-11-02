@@ -33,19 +33,21 @@ void TWIClass::setAddress(uint8_t address) {
 void TWIClass::read(uint8_t *value) {
     if (rxBufferIndex < rxBufferLength) {
         *value = rxBufferData[rxBufferIndex++];
+    } else {
+        //TODO read error
     }
 }
 
 void TWIClass::read(uint16_t *value) {
-    //TODO
+    this->read((uint8_t *) &value, 2);//TODO <-- check cast pointer is valid
 }
 
 void TWIClass::read(uint32_t *value) {
-    //TODO
+    this->read((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
 }
 
 void TWIClass::read(float *value) {
-    //TODO
+    this->read((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
 }
 
 void TWIClass::read(uint8_t *data, uint8_t length) {
