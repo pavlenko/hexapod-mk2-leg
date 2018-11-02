@@ -3,22 +3,10 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
+#include <avr/eeprom.h>
 #include <stdint.h>
 
-//TODO how to use interrupts to read/write operations
-uint8_t EEPROMClass::read(const uint8_t *address) {
-    // Wait until write completed
-    while (EECR & _BV(EEWE));
-
-    // Set address to read
-    EEAR = *address;
-
-    // Start read
-    EECR |= _BV(EERE);
-
-    // Return value
-    return EEDR;
-}
+//TODO write buffer item: [address, byte] or maybe [address, length, byte, byte, ...]
 
 EEPROMClass EEPROM;
 
