@@ -8,6 +8,14 @@
 
 //TODO write buffer item: [address, byte] or maybe [address, length, byte, byte, ...]
 
+typedef struct {
+    uint16_t address;
+    uint8_t *data;
+    uint8_t length;
+} EEPROM_WRITE_FRAME;
+
+static EEPROM_WRITE_FRAME frames[1];
+
 EEPROMClass EEPROM;
 
 ISR(EE_RDY_vect){

@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifndef EEMEM
+#define EEMEM __attribute__((section(".eeprom")))
+#endif
+
 class EEPROMClass
 {
 public:
