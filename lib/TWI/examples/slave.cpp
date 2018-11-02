@@ -2,56 +2,41 @@
 
 #include <stdint.h>
 
-#define STATE_READY 0
-#define STATE_REQUESTED_DATA1 1
-#define STATE_REQUESTED_DATA2 2
-
-typedef uint8_t AS_WORD;
-typedef uint8_t AS_DWORD;
-
-static volatile uint8_t state = STATE_READY;
-
 void onReceive(uint8_t *data, uint8_t length) {
     // Do something with received data as example set new app state
-    uint8_t command;
-    TWI.read(&command);// Read byte from RX buffer
+    uint8_t value1;
+    TWI.read(&value1);// Read byte from RX buffer
 
-    uint16_t value1;
-    TWI.read(&value1);// Read word from RX buffer
+    uint16_t value2;
+    TWI.read(&value2);// Read word from RX buffer
 
-    uint32_t value2;
-    TWI.read(&value2);// Read dword from RX buffer
+    uint32_t value3;
+    TWI.read(&value3);// Read dword from RX buffer
 
-    float value3;
-    TWI.read(&value3);// Read float from RX buffer
+    float value4;
+    TWI.read(&value4);// Read float from RX buffer
 
     uint8_t values[4];
-    TWI.read(values, 4);// Read 4 bytes from RX buffer to array
-
-    switch (command) {
-        case 0x01:
-            state = STATE_REQUESTED_DATA1;
-            break;
-        case 0x02:
-            state = STATE_REQUESTED_DATA2;
-            break;
-    }
+    TWI.read(values, 4);// Read 4 bytes array from RX buffer
 }
 
 void onRequest() {
     // Send something to master, may depends on rx data
-    switch (state) {
-        case STATE_REQUESTED_DATA1:
-            TWI.start();     // Reset TX buffer
-            TWI.write(0xF1); // Write to TX buffer
-            TWI.transmit();  // Start async send TX buffer
-            break;
-        case STATE_REQUESTED_DATA2:
-            TWI.start();
-            TWI.write(0xF2);
-            TWI.transmit();
-            break;
-    }
+    // There are only need to fill buffer data
+    uint8_t value1 = 0;
+    TWI.write(value1);// Write byte to TX buffer
+
+    uint16_t value2 = 0;
+    TWI.write(value2);// Write word to TX buffer
+
+    uint32_t value3 = 0;
+    TWI.write(value3);// Write dword to TX buffer
+
+    float value4 = 0;
+    TWI.write(value4);// Write float to TX buffer
+
+    uint8_t values[4];
+    TWI.write(values, 4);// Write 4 bytes array to TX buffer
 }
 
 int main() {
