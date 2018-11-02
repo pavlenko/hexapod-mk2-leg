@@ -35,7 +35,7 @@ int main() {
     TWI.setOnReceiveHandler(onReceive);
 
     // Configure transmission target
-    TWI.start(0xFF);
+    TWI.start();
 
     uint8_t value1 = 0;
     TWI.write(value1);// Write byte to TX buffer
@@ -53,7 +53,7 @@ int main() {
     TWI.write(values, 4);// Write 4 bytes array to TX buffer
 
     // Trigger transmission process
-    TWI.transmit(0xFFu);
+    TWI.transmitTo(0xFFu);
 }
 
 /*#include <Wire.h>

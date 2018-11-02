@@ -153,15 +153,16 @@ public:
     void receive(uint8_t address, uint8_t length);
 
     /**
-     * Send data to slave
-     *
-     * TODO maybe use on transmit handler for non-block send complete callback
+     * Prepare transmitting
+     */
+    void start();
+
+    /**
+     * Transmit data to slave
      *
      * @param address
-     * @param data
-     * @param length
      */
-    void transmit(uint8_t address, uint8_t *data, uint8_t length);
+    void transmit(uint8_t address);
 
     /**
      * Set handler for master transmit data completed event
