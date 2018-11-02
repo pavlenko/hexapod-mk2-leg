@@ -30,6 +30,13 @@
 #define TWI_ERROR_WRITE 0xF1
 #define TWI_ERROR_READ  0xF2
 
+enum TWIPrescaller {
+    TWI_PRESCALLER_NONE,
+    TWI_PRESCALLER_DIVIDE_BY_4,
+    TWI_PRESCALLER_DIVIDE_BY_16,
+    TWI_PRESCALLER_DIVIDE_BY_64,
+};
+
 class TWIClass
 {
 public:
@@ -49,6 +56,13 @@ public:
      * @param address
      */
     void setAddress(uint8_t address);
+
+    /**
+     * Set prescaler value
+     *
+     * @param value
+     */
+    void setPrescaler(TWIPrescaller value);
 
     /**
      * Set TWI frequency to update bit-rate

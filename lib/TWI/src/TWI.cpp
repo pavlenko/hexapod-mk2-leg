@@ -31,34 +31,38 @@ void TWIClass::enable() {
     twi_sendStop = true;
     twi_inRepStart = false;
 
-    // activate internal pullups for twi.
-    digitalWrite(SDA, 1);
-    digitalWrite(SCL, 1);
+    //TODO activate internal pull-up resistors OR use external and don't bother about that
 
-    // initialize twi prescaler and bit rate
-    cbi(TWSR, TWPS0);
-    cbi(TWSR, TWPS1);
+    // Set default prescaler value
+    this->setPrescaler(TWI_PRESCALLER_NONE);
 
+    // Set default frequency
     this->setFrequency(TWI_DEFAULT_FREQUENCY);
 
-    // enable twi module, acks, and twi interrupt
+    // Enable twi module, acks, and twi interrupt
     TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA);
 }
 
 void TWIClass::disable() {
-    // disable twi module, acks, and twi interrupt
+    // Disable twi module, acks, and twi interrupt
     TWCR &= ~(_BV(TWEN) | _BV(TWIE) | _BV(TWEA));
 
-    // deactivate internal pullups for twi.
-    digitalWrite(SDA, 0);
-    digitalWrite(SCL, 0);
+    //TODO de-activate internal pull-up resistors OR use external and don't bother about that
 }
 
 void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
 }
 
+void TWIClass::setPrescaler(TWIPrescaller value) {
+    TWSR = (uint8_t) ((TWSR & 0b11111100) | value);
+}
+
 void TWIClass::setFrequency(uint32_t frequency) {
+    /**
+     * From documentation of ATMega 128
+     * SCL frequency = F_CPU / ( 16 + 2 * TWBR * 4 * ( TWSR & ( (1 << TWPS1) | (1 << TWPS0) ) ) )
+     */
     TWBR = (uint8_t) (((F_CPU / frequency) - 16) / 2);
 }
 
