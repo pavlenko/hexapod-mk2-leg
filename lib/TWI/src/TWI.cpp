@@ -34,7 +34,7 @@ void TWIClass::read(uint8_t *value) {
     if (rxBufferIndex < rxBufferLength) {
         *value = rxBufferData[rxBufferIndex++];
     } else {
-        //TODO read error
+        error = TWI_ERROR_READ;
     }
 }
 
@@ -56,25 +56,27 @@ void TWIClass::read(uint8_t *data, uint8_t length) {
     }
 }
 
-void TWIClass::write(uint8_t data) {
+void TWIClass::write(uint8_t value) {
     if (txBufferLength < TWI_BUFFER_LENGTH) {
-        txBufferData[txBufferIndex] = data;
+        txBufferData[txBufferIndex] = value;
 
         txBufferIndex++;
         txBufferLength++;
+    } else {
+        error = TWI_ERROR_WRITE;
     }
 }
 
-void TWIClass::write(TWI_WORD data) {
-    this->write(data.bytes, 2);
+void TWIClass::write(uint16_t value) {
+    this->write((uint8_t *) &value, 2);//TODO <-- check cast pointer is valid
 }
 
-void TWIClass::write(TWI_DWORD data) {
-    this->write(data.bytes, 4);
+void TWIClass::write(uint32_t value) {
+    this->write((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
 }
 
-void TWIClass::write(TWI_FLOAT data) {
-    this->write(data.bytes, 4);
+void TWIClass::write(float value) {
+    this->write((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
 }
 
 void TWIClass::write(uint8_t *data, uint8_t length) {

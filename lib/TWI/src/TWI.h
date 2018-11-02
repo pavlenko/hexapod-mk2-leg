@@ -22,6 +22,10 @@
 #define TWI_STATE_SLAVE_RX  3
 #define TWI_STATE_SLAVE_TX  4
 
+#define TWI_ERROR_NONE  0xFF
+#define TWI_ERROR_WRITE 0xF1
+#define TWI_ERROR_READ  0xF2
+
 class TWIClass
 {
 public:
@@ -68,41 +72,35 @@ public:
     void read(uint8_t *data, uint8_t length);
 
     /**
-     * Write byte to TX buffer
+     * Write value to TX buffer
      *
-     * @param data
+     * @param value
      */
-    void write(uint8_t data);
+    void write(uint8_t value);
 
     /**
-     * Write uint16_t to TX buffer
+     * Write value to TX buffer
      *
-     * @attention EXPERIMENTAL
-     *
-     * @param data
+     * @param value
      */
-    void write(TWI_WORD data);
+    void write(uint16_t value);
 
     /**
-     * Write uint32_t to TX buffer
+     * Write value to TX buffer
      *
-     * @attention EXPERIMENTAL
-     *
-     * @param data
+     * @param value
      */
-    void write(TWI_DWORD data);
+    void write(uint32_t value);
 
     /**
-     * Write float to TX buffer
+     * Write value to TX buffer
      *
-     * @attention EXPERIMENTAL
-     *
-     * @param data
+     * @param value
      */
-    void write(TWI_FLOAT data);
+    void write(float value);
 
     /**
-     * Write bytes array to TX buffer
+     * Write values array to TX buffer
      *
      * @param data
      * @param length
