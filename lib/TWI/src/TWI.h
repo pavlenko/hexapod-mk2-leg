@@ -26,9 +26,10 @@
 #define TWI_STATE_SLAVE_RX  3
 #define TWI_STATE_SLAVE_TX  4
 
-#define TWI_ERROR_NONE  0xFF
-#define TWI_ERROR_WRITE 0xF1
-#define TWI_ERROR_READ  0xF2
+#define TWI_ERROR_NONE     0xFF
+#define TWI_ERROR_OVERFLOW 0xF0
+#define TWI_ERROR_WRITE    0xF1
+#define TWI_ERROR_READ     0xF2
 
 enum TWIPrescaller {
     TWI_PRESCALLER_NONE,
@@ -49,6 +50,13 @@ public:
      * Disable TWI module
      */
     void disable();
+
+    /**
+     * Get error
+     *
+     * @return
+     */
+    uint8_t getError();
 
     /**
      * Set slave address
@@ -144,8 +152,6 @@ public:
 
     /**
      * Receive data from slave
-     *
-     * TODO maybe use on receive handler for non-block read
      *
      * @param address
      * @param length

@@ -5,11 +5,9 @@
 #include <avr/sfr_defs.h>
 #include <util/twi.h>
 
-#define TWI_SEND_START() (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA))
 #define TWI_SEND_STOP()  (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTO))
 #define TWI_SEND_ACK()   (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE) | _BV(TWEA))
 #define TWI_SEND_NACK()  (TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE))
-//#define TWISendTransmit() (TWCR = _BV(1<<TWINT)|_BV(1<<TWEN)|_BV(1<<TWIE))
 
 static volatile uint8_t state;
 static volatile uint8_t error;
@@ -51,6 +49,10 @@ void TWIClass::disable() {
     TWCR &= ~(_BV(TWEN) | _BV(TWIE) | _BV(TWEA));
 
     //TODO de-activate internal pull-up resistors OR use external and don't bother about that
+}
+
+uint8_t TWIClass::getError() {
+    return error;
 }
 
 void TWIClass::setAddress(uint8_t address) {
@@ -125,16 +127,13 @@ void TWIClass::write(uint8_t *data, uint8_t length) {
 }
 
 void TWIClass::receive(uint8_t address, uint8_t length) {
-    uint8_t i;
+    if (TWI_BUFFER_LENGTH < length) {
+        error = TWI_ERROR_OVERFLOW;
+        return;
+    }
 
-    /*if (TWI_BUFFER_LENGTH < length) {
-        return 0;
-    }*/
-
-    // wait until twi is ready, become master receiver
-    /*while (TWI_READY != twi_state) {
-        continue;
-    }*/
+    // Blocking wait TWI module become ready
+    while (TWI_STATE_READY != state);
 
     state = TWI_STATE_MASTER_RX;
 
@@ -143,14 +142,17 @@ void TWIClass::receive(uint8_t address, uint8_t length) {
     error = TWI_ERROR_NONE;
 
     rxBufferIndex  = 0;
-    rxBufferLength = 0;
+    rxBufferLength = length;
 
-    // This is not intuitive, read on...
-    // On receive, the previously configured ACK/NACK setting is transmitted in
-    // response to the received byte before the interrupt is signalled.
-    // Therefor we must actually set NACK when the _next_ to last byte is
-    // received, causing that NACK to be sent in response to receiving the last
-    // expected byte of data.
+    /**
+     * This is not intuitive, read on...
+     *
+     * On receive, the previously configured ACK/NACK setting is transmitted in response to the received byte before
+     * the interrupt is signalled.
+     *
+     * Therefor we must actually set NACK when the next to last byte is received, causing that NACK to be sent in
+     * response to receiving the last expected byte of data.
+     */
 
     addressAndRW = (uint8_t) ((address << 1) | TW_READ);
 
@@ -180,21 +182,6 @@ void TWIClass::receive(uint8_t address, uint8_t length) {
         // Enable INTs and send START
         TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT) | _BV(TWSTA);
     }
-
-    // wait for read operation to complete
-    /*while (TWI_MRX == twi_state){
-        continue;
-    }
-
-    if (twi_masterBufferIndex < length)
-        length = twi_masterBufferIndex;
-
-    // copy twi buffer to data
-    for(i = 0; i < length; ++i){
-        data[i] = twi_masterBuffer[i];
-    }
-
-    return length;*/
 }
 
 void TWIClass::start() {
@@ -203,16 +190,13 @@ void TWIClass::start() {
 }
 
 void TWIClass::transmit(uint8_t address) {
-    uint8_t i;
-
     if (TWI_BUFFER_LENGTH < txBufferLength) {
-        return; // Error: buffer overflow
+        error = TWI_ERROR_OVERFLOW;
+        return;
     }
 
-    // wait until twi is ready, become master transmitter
-    while (TWI_STATE_READY != state) {
-        continue;//TODO check is need
-    }
+    // Blocking wait TWI module become ready
+    while (TWI_STATE_READY != state);
 
     state = TWI_STATE_MASTER_TX;
     error = TWI_ERROR_NONE;
@@ -247,20 +231,6 @@ void TWIClass::transmit(uint8_t address) {
         // Enable INTs and send START
         TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA);
     }
-
-    // wait for write operation to complete
-    /*while (wait && (TWI_MTX == twi_state)){
-        continue;
-    }*/
-
-    /*if (twi_error == 0xFF)
-        return 0;	// success
-    else if (twi_error == TW_MT_SLA_NACK)
-        return 2;	// error: address send, nack received
-    else if (twi_error == TW_MT_DATA_NACK)
-        return 3;	// error: data send, nack received
-    else
-        return 4;	// other twi error*/
 }
 
 void TWIClass::setOnTransmitHandler(void (*handler_ptr) ()) {
@@ -307,10 +277,13 @@ ISR(TWI_vect)
                     }
                 } else {
                     isRepeatedStart = 1;
-                    // we're gonna send the START
-                    // don't enable the interrupt. We'll generate the start, but we
-                    // avoid handling the interrupt until we're in the next transaction,
-                    // at the point where we would normally issue the start.
+
+                    /**
+                     * We're gonna send the START don't enable the interrupt.
+                     *
+                     * We'll generate the start, but we avoid handling the interrupt until we're in the next
+                     * transaction, at the point where we would normally issue the start.
+                     */
                     TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN);
                     state = TWI_STATE_READY;
                 }
@@ -346,6 +319,9 @@ ISR(TWI_vect)
         case TW_MR_DATA_NACK: // data received, nack sent
             rxBufferData[rxBufferIndex++] = TWDR;
 
+            // Trim buffer length to max received bytes
+            rxBufferLength = rxBufferIndex;
+
             if (sendStop) {
                 TWI_SEND_STOP();
                 state = TWI_STATE_READY;
@@ -355,10 +331,13 @@ ISR(TWI_vect)
                 }
             } else {
                 isRepeatedStart = 1;
-                // we're gonna send the START
-                // don't enable the interrupt. We'll generate the start, but we
-                // avoid handling the interrupt until we're in the next transaction,
-                // at the point where we would normally issue the start.
+
+                /**
+                 * We're gonna send the START don't enable the interrupt.
+                 *
+                 * We'll generate the start, but we avoid handling the interrupt until we're in the next
+                 * transaction, at the point where we would normally issue the start.
+                 */
                 TWCR = _BV(TWINT) | _BV(TWSTA)| _BV(TWEN) ;
                 state = TWI_STATE_READY;
             }

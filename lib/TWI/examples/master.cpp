@@ -1,4 +1,5 @@
 #include <TWI.h>
+#include <stdint.h>
 
 void onTransmit() {
     // Do something on transmission complete
@@ -55,21 +56,3 @@ int main() {
     // Trigger transmission process
     TWI.transmit(0xFFu);
 }
-
-/*#include <Wire.h>
-
-void setup() {
-  Wire.begin(); // join i2c bus (address optional for master)
-}
-
-byte x = 0;
-
-void loop() {
-  Wire.beginTransmission(8); // transmit to device #8
-  Wire.write("x is ");        // sends five bytes
-  Wire.write(x);              // sends one byte
-  Wire.endTransmission();    // stop transmitting
-
-  x++;
-  delay(500);
-}*/
