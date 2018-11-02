@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifndef TWI_DEFAULT_FREQUENCY
+#define TWI_DEFAULT_FREQUENCY 100000UL
+#endif
+
 #ifndef TWI_BUFFER_LENGTH
 #define TWI_BUFFER_LENGTH 32
 #endif
@@ -30,11 +34,28 @@ class TWIClass
 {
 public:
     /**
+     * Enable TWI module
+     */
+    void enable();
+
+    /**
+     * Disable TWI module
+     */
+    void disable();
+
+    /**
      * Set slave address
      *
      * @param address
      */
     void setAddress(uint8_t address);
+
+    /**
+     * Set TWI frequency to update bit-rate
+     *
+     * @param frequency
+     */
+    void setFrequency(uint32_t frequency);
 
     /**
      * Read value from TX buffer to pointer

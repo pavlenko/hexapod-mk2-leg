@@ -40,7 +40,16 @@ void onRequest() {
 }
 
 int main() {
+    // Enable TWI module
+    TWI.enable();
+
+    // Set TWI module frequency (optional)
+    TWI.setFrequency(400000u);
+
+    // Configure slave address
     TWI.setAddress(0x0F);
+
+    // Configure callbacks
     TWI.setOnReceiveHandler(onReceive);
     TWI.setOnRequestHandler(onRequest);
 }

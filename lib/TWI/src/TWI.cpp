@@ -26,8 +26,40 @@ static uint8_t rxBufferData[TWI_BUFFER_LENGTH];
 static volatile uint8_t rxBufferIndex;
 static volatile uint8_t rxBufferLength;
 
+void TWIClass::enable() {
+    state = TWI_STATE_READY;
+    twi_sendStop = true;
+    twi_inRepStart = false;
+
+    // activate internal pullups for twi.
+    digitalWrite(SDA, 1);
+    digitalWrite(SCL, 1);
+
+    // initialize twi prescaler and bit rate
+    cbi(TWSR, TWPS0);
+    cbi(TWSR, TWPS1);
+
+    this->setFrequency(TWI_DEFAULT_FREQUENCY);
+
+    // enable twi module, acks, and twi interrupt
+    TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA);
+}
+
+void TWIClass::disable() {
+    // disable twi module, acks, and twi interrupt
+    TWCR &= ~(_BV(TWEN) | _BV(TWIE) | _BV(TWEA));
+
+    // deactivate internal pullups for twi.
+    digitalWrite(SDA, 0);
+    digitalWrite(SCL, 0);
+}
+
 void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
+}
+
+void TWIClass::setFrequency(uint32_t frequency) {
+    TWBR = (uint8_t) (((F_CPU / frequency) - 16) / 2);
 }
 
 void TWIClass::read(uint8_t *value) {
@@ -119,13 +151,13 @@ ISR(TWI_vect)
             break;
 
 #if TWI_ENABLE_MASTER == 1
-            // Master Transmitter
+        // Master Transmitter
         case TW_MT_SLA_ACK:  // slave receiver acked address
         case TW_MT_DATA_ACK: // slave receiver acked data
             // if there is data to send, send it, otherwise stop
-            if (twi_masterBufferIndex < twi_masterBufferLength) {
+            if (txBufferIndex < txBufferLength) {
                 // copy data to output register and ack
-                TWDR = twi_masterBuffer[twi_masterBufferIndex++];
+                TWDR = txBufferData[txBufferIndex++];
                 TWI_SEND_ACK();
             } else {
                 if (twi_sendStop) {
@@ -157,21 +189,20 @@ ISR(TWI_vect)
             state = TWI_STATE_READY;
             break;
 
-            // Master Receiver
+        // Master Receiver
         case TW_MR_DATA_ACK: // data received, ack sent
-            // put byte into buffer
-            twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
+            rxBufferData[rxBufferIndex++] = TWDR;
         case TW_MR_SLA_ACK:  // address sent, ack received
             // ack if more bytes are expected, otherwise nack
-            if (twi_masterBufferIndex < twi_masterBufferLength) {
+            if (rxBufferIndex < rxBufferLength) {
                 TWI_SEND_ACK();
             } else {
                 TWI_SEND_NACK();
             }
             break;
         case TW_MR_DATA_NACK: // data received, nack sent
-            // put final byte into buffer
-            twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
+            rxBufferData[rxBufferIndex++] = TWDR;
+
             if (twi_sendStop) {
                 TWI_SEND_STOP();
                 state = TWI_STATE_READY;
@@ -245,7 +276,7 @@ ISR(TWI_vect)
             txBufferLength = 0;
 
             if (onRequestHandler) {
-                // Call user function to fill tx buffer (via TWI.transmit(data, length))
+                // Call user function to fill tx buffer
                 onRequestHandler();
             }
 

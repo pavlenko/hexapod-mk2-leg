@@ -24,8 +24,11 @@ void onReceive() {
 }
 
 int main() {
-    // Configure TWI module
-    TWI.initialize(400000u);
+    // Enable TWI module
+    TWI.enable();
+
+    // Set TWI module frequency (optional)
+    TWI.setFrequency(400000u);
 
     // Configure callbacks
     TWI.setOnTransmitHandler(onTransmit);
