@@ -48,7 +48,39 @@ public:
      */
     void setAddress(uint8_t address);
 
-    uint8_t read();
+    /**
+     * Read value from TX buffer to pointer
+     *
+     * @param value
+     */
+    void read(uint8_t *value);
+
+    /**
+     * Read value from TX buffer to pointer
+     *
+     * @param value
+     */
+    void read(uint16_t *value);
+
+    /**
+     * Read value from TX buffer to pointer
+     *
+     * @param value
+     */
+    void read(uint32_t *value);
+
+    /**
+     * Read value from TX buffer to pointer
+     *
+     * @param value
+     */
+    void read(float *value);
+
+    /**
+     * Read array from TX buffer to pointer
+     *
+     * @param value
+     */
     void read(uint8_t *data, uint8_t length);
 
     /**

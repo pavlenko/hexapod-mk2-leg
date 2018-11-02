@@ -13,9 +13,20 @@ static volatile uint8_t state = STATE_READY;
 
 void onReceive(uint8_t *data, uint8_t length) {
     // Do something with received data as example set new app state
-    uint8_t command = TWI.read();// Read byte from RX buffer
+    uint8_t command;
+    TWI.read(&command);// Read byte from RX buffer
 
-    uint16_t data = TWI.read();
+    uint16_t value1;
+    TWI.read(&value1);// Read word from RX buffer
+
+    uint32_t value2;
+    TWI.read(&value2);// Read dword from RX buffer
+
+    float value3;
+    TWI.read(&value3);// Read float from RX buffer
+
+    uint8_t values[4];
+    TWI.read(values, 4);// Read 4 bytes from RX buffer to array
 
     switch (command) {
         case 0x01:

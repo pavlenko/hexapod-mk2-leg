@@ -30,19 +30,27 @@ void TWIClass::setAddress(uint8_t address) {
     TWAR = address << 1;
 }
 
-uint8_t TWIClass::read() {
-    uint8_t value = 0;
-
+void TWIClass::read(uint8_t *value) {
     if (rxBufferIndex < rxBufferLength) {
-        value = rxBufferData[rxBufferIndex++];
+        *value = rxBufferData[rxBufferIndex++];
     }
+}
 
-    return value;
+void TWIClass::read(uint16_t *value) {
+    //TODO
+}
+
+void TWIClass::read(uint32_t *value) {
+    //TODO
+}
+
+void TWIClass::read(float *value) {
+    //TODO
 }
 
 void TWIClass::read(uint8_t *data, uint8_t length) {
     for (uint8_t i = 0; i < length; i++) {
-        data[i] = this->read();
+        this->read(&data[i]);
     }
 }
 
