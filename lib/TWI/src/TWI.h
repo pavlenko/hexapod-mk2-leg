@@ -176,7 +176,7 @@ public:
      *
      * @param handler_ptr
      */
-    void setOnReceiveHandler(void (*handler_ptr) (uint8_t *data, uint8_t length));
+    void setOnReceiveHandler(void (*handler_ptr) ());
 
     /**
      * Set handler for slave transmit data requested event

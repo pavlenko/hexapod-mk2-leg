@@ -13,9 +13,12 @@
 
 static volatile uint8_t state;
 static volatile uint8_t error;
+static volatile uint8_t addressAndRW;
+static volatile uint8_t isRepeatedStart;
+static volatile uint8_t sendStop;
 
 static void (*onTransmitHandler) ();
-static void (*onReceiveHandler) (uint8_t *data, uint8_t length);
+static void (*onReceiveHandler) ();
 static void (*onRequestHandler) ();
 
 static uint8_t txBufferData[TWI_BUFFER_LENGTH];
@@ -28,8 +31,8 @@ static volatile uint8_t rxBufferLength;
 
 void TWIClass::enable() {
     state = TWI_STATE_READY;
-    twi_sendStop = true;
-    twi_inRepStart = false;
+    sendStop = 1;
+    isRepeatedStart = 0;
 
     //TODO activate internal pull-up resistors OR use external and don't bother about that
 
@@ -122,7 +125,76 @@ void TWIClass::write(uint8_t *data, uint8_t length) {
 }
 
 void TWIClass::receive(uint8_t address, uint8_t length) {
-    //TODO
+    uint8_t i;
+
+    /*if (TWI_BUFFER_LENGTH < length) {
+        return 0;
+    }*/
+
+    // wait until twi is ready, become master receiver
+    /*while (TWI_READY != twi_state) {
+        continue;
+    }*/
+
+    state = TWI_STATE_MASTER_RX;
+
+    //TODO twi_sendStop = sendStop;
+
+    error = TWI_ERROR_NONE;
+
+    rxBufferIndex  = 0;
+    rxBufferLength = 0;
+
+    // This is not intuitive, read on...
+    // On receive, the previously configured ACK/NACK setting is transmitted in
+    // response to the received byte before the interrupt is signalled.
+    // Therefor we must actually set NACK when the _next_ to last byte is
+    // received, causing that NACK to be sent in response to receiving the last
+    // expected byte of data.
+
+    addressAndRW = (uint8_t) ((address << 1) | TW_READ);
+
+    if (isRepeatedStart) {
+        /**
+         * If we're in the repeated start state, then we've already sent the start, (@@@ we hope),
+         * and the TWI state machine is just waiting for the address byte.
+         *
+         * We need to remove ourselves from the repeated start state before we enable interrupts, since the ISR is
+         * ASYNC, and we could get confused if we hit the ISR before cleaning up.
+         *
+         * Also, don't enable the START interrupt.
+         *
+         * There may be one pending from the repeated start that we sent ourselves, and that would really confuse things.
+         *
+         * Remember, we're dealing with an ASYNC ISR.
+         */
+        isRepeatedStart = 0;
+
+        do {
+            TWDR = addressAndRW;
+        } while(TWCR & _BV(TWWC));
+
+        // Enable INTs, but not START
+        TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);
+    } else {
+        // Enable INTs and send START
+        TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT) | _BV(TWSTA);
+    }
+
+    // wait for read operation to complete
+    /*while (TWI_MRX == twi_state){
+        continue;
+    }
+
+    if (twi_masterBufferIndex < length)
+        length = twi_masterBufferIndex;
+
+    // copy twi buffer to data
+    for(i = 0; i < length; ++i){
+        data[i] = twi_masterBuffer[i];
+    }
+
+    return length;*/
 }
 
 void TWIClass::start() {
@@ -145,31 +217,36 @@ void TWIClass::transmit(uint8_t address) {
     state = TWI_STATE_MASTER_TX;
     error = TWI_ERROR_NONE;
 
-    twi_sendStop = sendStop;
+    //TODO twi_sendStop = sendStop;
 
-    // build sla+w, slave device address + w bit
-    twi_slarw = TW_WRITE;
-    twi_slarw |= address << 1;
+    addressAndRW = (uint8_t) ((address << 1) | TW_WRITE);
 
-    // if we're in a repeated start, then we've already sent the START
-    // in the ISR. Don't do it again.
-    //
-    if (true == twi_inRepStart) {
-        // if we're in the repeated start state, then we've already sent the start,
-        // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
-        // We need to remove ourselves from the repeated start state before we enable interrupts,
-        // since the ISR is ASYNC, and we could get confused if we hit the ISR before cleaning
-        // up. Also, don't enable the START interrupt. There may be one pending from the
-        // repeated start that we sent outselves, and that would really confuse things.
-        twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
+    if (isRepeatedStart) {
+        /**
+         * If we're in the repeated start state, then we've already sent the start, (@@@ we hope),
+         * and the TWI state machine is just waiting for the address byte.
+         *
+         * We need to remove ourselves from the repeated start state before we enable interrupts, since the ISR is
+         * ASYNC, and we could get confused if we hit the ISR before cleaning up.
+         *
+         * Also, don't enable the START interrupt.
+         *
+         * There may be one pending from the repeated start that we sent ourselves, and that would really confuse things.
+         *
+         * Remember, we're dealing with an ASYNC ISR.
+         */
+        isRepeatedStart = 0;
+
         do {
-            TWDR = twi_slarw;
-        } while(TWCR & _BV(TWWC));
-        TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
+            TWDR = addressAndRW;
+        } while (TWCR & _BV(TWWC));
+
+        // Enable INTs, but not START
+        TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);
+    } else {
+        // Enable INTs and send START
+        TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA);
     }
-    else
-        // send start condition
-        TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA);	// enable INTs
 
     // wait for write operation to complete
     /*while (wait && (TWI_MTX == twi_state)){
@@ -190,7 +267,7 @@ void TWIClass::setOnTransmitHandler(void (*handler_ptr) ()) {
     onTransmitHandler = handler_ptr;
 }
 
-void TWIClass::setOnReceiveHandler(void (*handler_ptr) (uint8_t *, uint8_t)) {
+void TWIClass::setOnReceiveHandler(void (*handler_ptr) ()) {
     onReceiveHandler = handler_ptr;
 }
 
@@ -207,7 +284,7 @@ ISR(TWI_vect)
         case TW_START:     // sent start condition
         case TW_REP_START: // sent repeated start condition
             // copy device address and r/w bit to output register and ack
-            TWDR = twi_slarw;
+            TWDR = addressAndRW;
             TWI_SEND_ACK();
             break;
 
@@ -221,11 +298,16 @@ ISR(TWI_vect)
                 TWDR = txBufferData[txBufferIndex++];
                 TWI_SEND_ACK();
             } else {
-                if (twi_sendStop) {
+                if (sendStop) {
                     TWI_SEND_STOP();
                     state = TWI_STATE_READY;
+
+                    if (onTransmitHandler) {
+                        onTransmitHandler();//TODO check if valid
+                    }
                 } else {
-                    twi_inRepStart = true;    // we're gonna send the START
+                    isRepeatedStart = 1;
+                    // we're gonna send the START
                     // don't enable the interrupt. We'll generate the start, but we
                     // avoid handling the interrupt until we're in the next transaction,
                     // at the point where we would normally issue the start.
@@ -264,11 +346,16 @@ ISR(TWI_vect)
         case TW_MR_DATA_NACK: // data received, nack sent
             rxBufferData[rxBufferIndex++] = TWDR;
 
-            if (twi_sendStop) {
+            if (sendStop) {
                 TWI_SEND_STOP();
                 state = TWI_STATE_READY;
+
+                if (onReceiveHandler) {
+                    onReceiveHandler();
+                }
             } else {
-                twi_inRepStart = true;	// we're gonna send the START
+                isRepeatedStart = 1;
+                // we're gonna send the START
                 // don't enable the interrupt. We'll generate the start, but we
                 // avoid handling the interrupt until we're in the next transaction,
                 // at the point where we would normally issue the start.
@@ -317,10 +404,11 @@ ISR(TWI_vect)
             }
             // callback to user defined callback
             if (onReceiveHandler) {
-                onReceiveHandler(rxBufferData, rxBufferIndex);
+                onReceiveHandler();
             }
 
-            rxBufferIndex = 0;
+            rxBufferIndex  = 0;
+            rxBufferLength = 0;
             break;
         case TW_SR_DATA_NACK:       // data received, returned nack
         case TW_SR_GCALL_DATA_NACK: // data received generally, returned nack

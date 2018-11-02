@@ -2,7 +2,7 @@
 
 void onTransmit() {
     // Do something on transmission complete
-    TWI.receive(0xFF, 4, onReceive);
+    TWI.receive(0xFF, 4);
 }
 
 void onReceive() {
@@ -53,7 +53,7 @@ int main() {
     TWI.write(values, 4);// Write 4 bytes array to TX buffer
 
     // Trigger transmission process
-    TWI.transmitTo(0xFFu);
+    TWI.transmit(0xFFu);
 }
 
 /*#include <Wire.h>
