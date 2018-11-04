@@ -30,6 +30,32 @@ enum Timer1Interrupt {
     ,TIMER1_INTERRUPT_COUNT
 };
 
+enum Timer1WaveformGenerationMode {
+    TIMER1_WGM_NORMAL,
+    TIMER1_WGM_PWM_PHASE_CORRECT_8,
+    TIMER1_WGM_PWM_PHASE_CORRECT_9,
+    TIMER1_WGM_PWM_PHASE_CORRECT_10,
+    TIMER1_WGM_CTC_BY_OCR,
+    TIMER1_WGM_FAST_PWM_8,
+    TIMER1_WGM_FAST_PWM_9,
+    TIMER1_WGM_FAST_PWM_10,
+    TIMER1_WGM_PWM_PHASE_FREQ_CORRECT_BY_ICR,
+    TIMER1_WGM_PWM_PHASE_FREQ_CORRECT_BY_OCR,
+    TIMER1_WGM_PWM_PHASE_CORRECT_BY_ICR,
+    TIMER1_WGM_PWM_PHASE_CORRECT_BY_OCR,
+    TIMER1_WGM_CTC_BY_ICR,
+    TIMER1_WGM_RESERVED,
+    TIMER1_WGM_FAST_PWM_BY_ICR,
+    TIMER1_WGM_FAST_PWM_BY_OCR,
+};
+
+enum Timer1OutputCompareMode {
+    TIMER1_COMPARE_OUTPUT_DISABLED,
+    TIMER1_COMPARE_OUTPUT_TOGGLE,
+    TIMER1_COMPARE_OUTPUT_CLEAR,
+    TIMER1_COMPARE_OUTPUT_SET
+};
+
 class Timer1Class
 {
 private:
@@ -43,6 +69,27 @@ public:
      * @param clockSource
      */
     void setClockSource(Timer1ClockSource clockSource);
+
+    /**
+     * Set waveform generation mode (updates both TCCRnA and TCCRnB registers)
+     *
+     * @param mode
+     */
+    void setWaveformGenerationMode(Timer1WaveformGenerationMode mode);
+
+    /**
+     * Set output compare mode for channel A
+     *
+     * @param mode
+     */
+    void setCompareOutputModeA(Timer1OutputCompareMode mode);
+
+    /**
+     * Set output compare mode for channel B
+     *
+     * @param mode
+     */
+    void setCompareOutputModeB(Timer1OutputCompareMode mode);
 
     /**
      * Set or clear interrupt handler for specific interrupt
@@ -65,6 +112,36 @@ public:
      * @param value
      */
     void setValue(uint16_t value);
+
+    /**
+     * @return
+     */
+    uint16_t getCompareValueA();
+
+    /**
+     * @param value
+     */
+    void setCompareValueA(uint16_t value);
+
+    /**
+     * @return
+     */
+    uint16_t getCompareValueB();
+
+    /**
+     * @param value
+     */
+    void setCompareValueB(uint16_t value);
+
+    /**
+     * @return
+     */
+    uint16_t getCaptureValue();
+
+    /**
+     * @param value
+     */
+    void setCaptureValue(uint16_t value);
 
     /**
      * Trigger specific interrupt handler
