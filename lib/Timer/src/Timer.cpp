@@ -4,6 +4,28 @@
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
 
+void Timer8BitClass::setClockSource(TimerClockSource clockSource) {
+    *this->TCCR_B = (uint8_t) ((*this->TCCR_B & 0b00000111) | clockSource);
+}
+
+uint8_t Timer8BitClass::getCounterValue() {
+    return *this->TCNT;
+}
+
+void Timer8BitClass::setCounterValue(uint8_t value) {
+    *this->TCNT = value;
+}
+
+void Timer8BitClass::setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr) {
+    this->handlers[code] = handlerPtr;
+}
+
+void Timer8BitClass::triggerInterrupt(uint8_t code) {
+    if (this->handlers[code]) {
+        this->handlers[code]();
+    }
+}
+
 void Timer16BitClass::setClockSource(TimerClockSource clockSource) {
     *this->TCCR_B = (uint8_t) ((*this->TCCR_B & 0b00000111) | clockSource);
 }

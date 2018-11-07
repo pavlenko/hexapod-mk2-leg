@@ -67,6 +67,41 @@ enum TimerOutputCompareMode {
 
 typedef void (*TimerInterruptHandler_t) ();
 
+class Timer8BitClass {
+protected:
+    volatile uint8_t *TCCR_A;
+    volatile uint8_t *TCCR_B;
+    volatile uint8_t *TCNT;
+
+    volatile TimerInterruptHandler_t handlers[1];//TODO size???
+public:
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource);
+
+    /**
+     * @return
+     */
+    uint8_t getCounterValue();
+
+    /**
+     * @param value
+     */
+    void setCounterValue(uint8_t value);
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr);
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(uint8_t code);
+};
+
 class Timer16BitClass {
 protected:
     volatile uint8_t  *TCCR_A;
