@@ -202,7 +202,9 @@ public:
     /**
      * @param clockSource
      */
-    void setClockSource(TimerClockSource clockSource);
+    void setClockSource(TimerClockSource clockSource) {
+        TCCR1B = (uint8_t) ((TCCR1B & 0b11111000) | clockSource);
+    }
 
     /**
      * @param code
@@ -220,14 +222,70 @@ public:
     }
 };
 
+#ifdef TCNT3
+
+enum Timer3Interrupt {
+    TIMER3_ISR_OVERFLOW = TOIE3,
+    TIMER3_ISR_OUTPUT_COMPARE_A = OCIE3A,
+    TIMER3_ISR_OUTPUT_COMPARE_B = OCIE3B,
+    TIMER3_ISR_OUTPUT_COMPARE_C = OCIE3C,
+#ifdef ICIE3
+    TIMER3_ISR_INPUT_CAPTURE = ICIE3
+#else
+    TIMER3_ISR_INPUT_CAPTURE = TICIE3
+#endif
+};
+
 class Timer3Class {
 private:
-    volatile TimerInterruptHandler_t handlers[1];
+    volatile TimerInterruptHandler_t handlers[TIMER3_ISR_INPUT_CAPTURE];
 public:
     /**
      * @param clockSource
      */
-    void setClockSource(TimerClockSource clockSource);
+    void setClockSource(TimerClockSource clockSource) {
+        TCCR3B = (uint8_t) ((TCCR3B & 0b11111000) | clockSource);
+    }
+
+    uint16_t getCounterValue() {
+        return TCNT3;
+    }
+
+    void setCounterValue(uint16_t value) {
+        TCNT3 = value;
+    }
+
+    uint16_t getCompareValueA() {
+        return OCR3A;
+    }
+
+    void setCompareValueA(uint16_t value) {
+        OCR3A = value;
+    }
+
+    uint16_t getCompareValueB() {
+        return OCR3B;
+    }
+
+    void setCompareValueB(uint16_t value) {
+        OCR3B = value;
+    }
+
+    uint16_t getCompareValueC() {
+        return OCR3C;
+    }
+
+    void setCompareValueC(uint16_t value) {
+        OCR3C = value;
+    }
+
+    uint16_t getCaptureValue() {
+        return ICR3;
+    }
+
+    void setCaptureValue(uint16_t value) {
+        ICR3 = value;
+    }
 
     /**
      * @param code
@@ -261,6 +319,10 @@ public:
     }
 };
 
+#endif //TCNT3
+
+#ifdef TCNT4
+
 enum Timer4Interrupt {
     TIMER4_ISR_OVERFLOW = TOIE4,
     TIMER4_ISR_OUTPUT_COMPARE_A = OCIE4A,
@@ -271,7 +333,7 @@ enum Timer4Interrupt {
 
 class Timer4Class {
 private:
-    volatile TimerInterruptHandler_t handlers[ICIE4];
+    volatile TimerInterruptHandler_t handlers[TIMER4_ISR_INPUT_CAPTURE];
 public:
     /**
      * @param clockSource
@@ -344,6 +406,10 @@ public:
     }
 };
 
+#endif //TCNT4
+
+#ifdef TCNT5
+
 enum Timer5Interrupt {
     TIMER5_ISR_OVERFLOW = TOIE5,
     TIMER5_ISR_OUTPUT_COMPARE_A = OCIE5A,
@@ -354,7 +420,7 @@ enum Timer5Interrupt {
 
 class Timer5Class {
 private:
-    volatile TimerInterruptHandler_t handlers[ICIE5];
+    volatile TimerInterruptHandler_t handlers[TIMER5_ISR_INPUT_CAPTURE];
 public:
     /**
      * @param clockSource
@@ -426,5 +492,7 @@ public:
         }
     }
 };
+
+#endif //TCNT5
 
 #endif //TIMER_H
