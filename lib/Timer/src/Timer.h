@@ -1,8 +1,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-//#define __AVR_ATmega2560__ 1 // For test only
-#define __AVR_ATmega128A__ 1
+#define __AVR_ATmega2560__ 1 // For test only
+//#define __AVR_ATmega128A__ 1
 
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
@@ -186,6 +186,8 @@ public:
     void triggerInterrupt(uint8_t code);
 };
 
+#ifdef TCNT1
+
 class Timer1Class {
 private:
     volatile TimerInterruptHandler_t handlers[1];
@@ -212,6 +214,10 @@ public:
         }
     }
 };
+
+extern Timer1Class Timer1;
+
+#endif //TCNT1
 
 #ifdef TCNT2
 
@@ -371,6 +377,8 @@ public:
     }
 };
 
+extern Timer3Class Timer3;
+
 #endif //TCNT3
 
 #ifdef TCNT4
@@ -458,6 +466,8 @@ public:
     }
 };
 
+extern Timer4Class Timer4;
+
 #endif //TCNT4
 
 #ifdef TCNT5
@@ -544,6 +554,8 @@ public:
         }
     }
 };
+
+extern Timer5Class Timer5;
 
 #endif //TCNT5
 

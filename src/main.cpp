@@ -1,5 +1,6 @@
 #include <ES.h>
-#include <Timer0.h>
+#include <ServoMotor.h>
+#include <Timer.h>
 #include <TWI.h>
 
 #include <avr/interrupt.h>
@@ -10,20 +11,17 @@
 
 volatile uint8_t timer;
 
+void onTimer5CompareA() {
+    //TODO handle servo update
+}
+
 void toggle_port()
 {
     PORTA = ~PORTA;
 }
 
-void timer0_ovf()
-{
-    Timer0.setValue(5);
-    timer++;
-
-    if (timer == 200) {
-        timer = 0;
-        ES.trigger(1);
-    }
+void twiOnRequest() {
+    //TODO handle commands from TWI module
 }
 
 int main()
@@ -31,11 +29,10 @@ int main()
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
 
-    TWI.setOnRequestHandler(timer0_ovf);
+    TWI.setOnRequestHandler(twiOnRequest);
 
-    Timer0.setClockSource(TIMER0_CLOCK_DIVIDE_BY_8);
-    Timer0.setValue(5);
-    Timer0.setInterruptHandler(TIMER0_OVERFLOW_INTERRUPT, timer0_ovf);
+    Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    Timer5.setInterruptHandler(TIMER5_ISR_OUTPUT_COMPARE_A, onTimer5CompareA);
 
     sei();
 
