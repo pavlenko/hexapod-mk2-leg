@@ -1,20 +1,11 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#define __AVR_ATmega2560__ 1 // For test only
-#define __AVR_ATmega128__ 1
+//#define __AVR_ATmega2560__ 1 // For test only
+#define __AVR_ATmega128A__ 1
 
-//#include <avr/io.h>
+#include <avr/io.h>
 #include <avr/sfr_defs.h>
-
-#define _AVR_IO_H_ 1
-
-#include <avr/iom8a.h>
-#include <avr/iom16a.h>
-#include <avr/iom32a.h>
-#include <avr/iom64a.h>
-#include <avr/iom128a.h>
-#include <avr/iom2560.h>
 
 // ATMEGA 48,88,168: TCCR0A, TCCR0B, TCNT0, OCR0A, OCR0B, TIMSK0, TIFR0
 // ATMEGA 8L: TCCR0, TCNT0, TIMSK, TIFR <-- not supported
@@ -222,6 +213,67 @@ public:
     }
 };
 
+#ifdef TCNT2
+
+enum Timer2Interrupt {
+    TIMER2_ISR_OVERFLOW = TOIE2
+#ifdef OCIE2A
+    ,TIMER2_ISR_OUTPUT_COMPARE   = OCIE2A,
+    ,TIMER2_ISR_OUTPUT_COMPARE_B = OCIE2B
+#else
+    ,TIMER2_ISR_OUTPUT_COMPARE = OCIE2
+#endif
+};
+
+class Timer2Class {
+private:
+    volatile TimerInterruptHandler_t handlers[8];
+public:
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource) {
+#ifdef TCCR2B
+        TCCR2B = (uint8_t) ((TCCR2B & 0b11111000) | clockSource);
+#else
+        TCCR2 = (uint8_t) ((TCCR2 & 0b11111000) | clockSource);
+#endif
+    }
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(Timer2Interrupt code, TimerInterruptHandler_t handlerPtr) {
+        this->handlers[code] = handlerPtr;
+
+        if (handlerPtr) {
+#ifdef TIMSK2
+            TIMSK2 |= _BV(code);
+#else
+            TIMSK |= _BV(code);
+#endif
+        } else {
+#ifdef TIMSK2
+            TIMSK2 &= ~_BV(code);
+#else
+            TIMSK &= ~_BV(code);
+#endif
+        }
+    }
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(Timer2Interrupt code) {
+        if (this->handlers[code]) {
+            this->handlers[code]();
+        }
+    }
+};
+
+#endif //TCNT2
+
 #ifdef TCNT3
 
 enum Timer3Interrupt {
@@ -238,7 +290,7 @@ enum Timer3Interrupt {
 
 class Timer3Class {
 private:
-    volatile TimerInterruptHandler_t handlers[TIMER3_ISR_INPUT_CAPTURE];
+    volatile TimerInterruptHandler_t handlers[8];
 public:
     /**
      * @param clockSource
@@ -291,7 +343,7 @@ public:
      * @param code
      * @param handlerPtr
      */
-    void setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr) {
+    void setInterruptHandler(Timer3Interrupt code, TimerInterruptHandler_t handlerPtr) {
         this->handlers[code] = handlerPtr;
 
         if (handlerPtr) {
@@ -312,7 +364,7 @@ public:
     /**
      * @param code
      */
-    void triggerInterrupt(uint8_t code) {
+    void triggerInterrupt(Timer3Interrupt code) {
         if (this->handlers[code]) {
             this->handlers[code]();
         }
@@ -333,7 +385,7 @@ enum Timer4Interrupt {
 
 class Timer4Class {
 private:
-    volatile TimerInterruptHandler_t handlers[TIMER4_ISR_INPUT_CAPTURE];
+    volatile TimerInterruptHandler_t handlers[8];
 public:
     /**
      * @param clockSource
@@ -420,7 +472,7 @@ enum Timer5Interrupt {
 
 class Timer5Class {
 private:
-    volatile TimerInterruptHandler_t handlers[TIMER5_ISR_INPUT_CAPTURE];
+    volatile TimerInterruptHandler_t handlers[8];
 public:
     /**
      * @param clockSource
