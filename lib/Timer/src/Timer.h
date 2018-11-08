@@ -1,10 +1,20 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-//#define __AVR_ATmega2560__ 1 // For test only
+#define __AVR_ATmega2560__ 1 // For test only
+#define __AVR_ATmega128__ 1
 
-#include <avr/io.h>
+//#include <avr/io.h>
 #include <avr/sfr_defs.h>
+
+#define _AVR_IO_H_ 1
+
+#include <avr/iom8a.h>
+#include <avr/iom16a.h>
+#include <avr/iom32a.h>
+#include <avr/iom64a.h>
+#include <avr/iom128a.h>
+#include <avr/iom2560.h>
 
 // ATMEGA 48,88,168: TCCR0A, TCCR0B, TCNT0, OCR0A, OCR0B, TIMSK0, TIFR0
 // ATMEGA 8L: TCCR0, TCNT0, TIMSK, TIFR <-- not supported
@@ -185,12 +195,236 @@ public:
     void triggerInterrupt(uint8_t code);
 };
 
-class Timer1Class : Timer16BitClass
-{
+class Timer1Class {
+private:
+    volatile TimerInterruptHandler_t handlers[1];
 public:
-    Timer1Class();
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource);
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr) {}
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(uint8_t code) {
+        if (this->handlers[code]) {
+            this->handlers[code]();
+        }
+    }
 };
 
-extern Timer1Class Timer1();
+class Timer3Class {
+private:
+    volatile TimerInterruptHandler_t handlers[1];
+public:
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource);
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr) {
+        this->handlers[code] = handlerPtr;
+
+        if (handlerPtr) {
+#ifdef TIMSK3
+            TIMSK3 |= _BV(code);
+#else
+            ETIMSK |= _BV(code);
+#endif
+        } else {
+#ifdef TIMSK3
+            TIMSK3 &= ~_BV(code);
+#else
+            ETIMSK &= ~_BV(code);
+#endif
+        }
+    }
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(uint8_t code) {
+        if (this->handlers[code]) {
+            this->handlers[code]();
+        }
+    }
+};
+
+enum Timer4Interrupt {
+    TIMER4_ISR_OVERFLOW = TOIE4,
+    TIMER4_ISR_OUTPUT_COMPARE_A = OCIE4A,
+    TIMER4_ISR_OUTPUT_COMPARE_B = OCIE4B,
+    TIMER4_ISR_OUTPUT_COMPARE_C = OCIE4C,
+    TIMER4_ISR_INPUT_CAPTURE = ICIE4
+};
+
+class Timer4Class {
+private:
+    volatile TimerInterruptHandler_t handlers[ICIE4];
+public:
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource) {
+        TCCR4B = (uint8_t) ((TCCR4B & 0b11111000) | clockSource);
+    }
+
+    uint16_t getCounterValue() {
+        return TCNT4;
+    }
+
+    void setCounterValue(uint16_t value) {
+        TCNT4 = value;
+    }
+
+    uint16_t getCompareValueA() {
+        return OCR4A;
+    }
+
+    void setCompareValueA(uint16_t value) {
+        OCR4A = value;
+    }
+
+    uint16_t getCompareValueB() {
+        return OCR4B;
+    }
+
+    void setCompareValueB(uint16_t value) {
+        OCR4B = value;
+    }
+
+    uint16_t getCompareValueC() {
+        return OCR4C;
+    }
+
+    void setCompareValueC(uint16_t value) {
+        OCR4C = value;
+    }
+
+    uint16_t getCaptureValue() {
+        return ICR4;
+    }
+
+    void setCaptureValue(uint16_t value) {
+        ICR4 = value;
+    }
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(Timer4Interrupt code, TimerInterruptHandler_t handlerPtr) {
+        this->handlers[code] = handlerPtr;
+
+        if (handlerPtr) {
+            TIMSK4 |= _BV(code);
+        } else {
+            TIMSK4 &= ~_BV(code);
+        }
+    }
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(Timer4Interrupt code) {
+        if (this->handlers[code]) {
+            this->handlers[code]();
+        }
+    }
+};
+
+enum Timer5Interrupt {
+    TIMER5_ISR_OVERFLOW = TOIE5,
+    TIMER5_ISR_OUTPUT_COMPARE_A = OCIE5A,
+    TIMER5_ISR_OUTPUT_COMPARE_B = OCIE5B,
+    TIMER5_ISR_OUTPUT_COMPARE_C = OCIE5C,
+    TIMER5_ISR_INPUT_CAPTURE = ICIE5
+};
+
+class Timer5Class {
+private:
+    volatile TimerInterruptHandler_t handlers[ICIE5];
+public:
+    /**
+     * @param clockSource
+     */
+    void setClockSource(TimerClockSource clockSource) {
+        TCCR5B = (uint8_t) ((TCCR5B & 0b11111000) | clockSource);
+    }
+
+    uint16_t getCounterValue() {
+        return TCNT5;
+    }
+
+    void setCounterValue(uint16_t value) {
+        TCNT5 = value;
+    }
+
+    uint16_t getCompareValueA() {
+        return OCR5A;
+    }
+
+    void setCompareValueA(uint16_t value) {
+        OCR5A = value;
+    }
+
+    uint16_t getCompareValueB() {
+        return OCR5B;
+    }
+
+    void setCompareValueB(uint16_t value) {
+        OCR5B = value;
+    }
+
+    uint16_t getCompareValueC() {
+        return OCR5C;
+    }
+
+    void setCompareValueC(uint16_t value) {
+        OCR5C = value;
+    }
+
+    uint16_t getCaptureValue() {
+        return ICR5;
+    }
+
+    void setCaptureValue(uint16_t value) {
+        ICR5 = value;
+    }
+
+    /**
+     * @param code
+     * @param handlerPtr
+     */
+    void setInterruptHandler(Timer5Interrupt code, TimerInterruptHandler_t handlerPtr) {
+        this->handlers[code] = handlerPtr;
+
+        if (handlerPtr) {
+            TIMSK5 |= _BV(code);
+        } else {
+            TIMSK5 &= ~_BV(code);
+        }
+    }
+
+    /**
+     * @param code
+     */
+    void triggerInterrupt(Timer5Interrupt code) {
+        if (this->handlers[code]) {
+            this->handlers[code]();
+        }
+    }
+};
 
 #endif //TIMER_H

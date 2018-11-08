@@ -84,15 +84,3 @@ void Timer16BitClass::triggerInterrupt(uint8_t code) {
         this->handlers[code]();
     }
 }
-
-Timer1Class::Timer1Class(): Timer16BitClass() {
-    TCCR_A = &TCCR1A;
-    TCCR_B = &TCCR1B;
-
-    TCNT  = &TCNT1;
-    OCR_A = &OCR1A;
-    OCR_B = &OCR1B;
-    ICR   = &ICR1;
-}
-
-Timer1Class Timer1();
