@@ -36,11 +36,11 @@ ServoMotor::ServoMotor() {
     }
 }
 
-uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin) {
+uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin) {
     return this->attach(port, pin, SERVOMOTOR_PULSE_MIN, SERVOMOTOR_PULSE_MAX);
 }
 
-uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
+uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
     if (this->index != SERVOMOTOR_INVALID) {
         servos[this->index].port = port;
 
@@ -54,35 +54,35 @@ uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, ui
     return this->index;
 }
 
-void ServoMotor::detach() {
+void ServoMotorClass::detach(uint8_t index) {
     servos[this->index].pin.attached = 0;
 }
 
-uint16_t ServoMotor::getMIN() {
+uint16_t ServoMotorClass::getMIN() {
     return this->min;
 }
 
-void ServoMotor::setMIN(uint16_t value) {
+void ServoMotorClass::setMIN(uint16_t value) {
     this->min = value;
 }
 
-uint16_t ServoMotor::getMAX() {
+uint16_t ServoMotorClass::getMAX() {
     return this->max;
 }
 
-void ServoMotor::setMAX(uint16_t value) {
+void ServoMotorClass::setMAX(uint16_t value) {
     this->max = value;
 }
 
-uint16_t ServoMotor::getAngle() {
+uint16_t ServoMotorClass::getAngle() {
     return (uint16_t) map(this->getMicroseconds(), this->min, this->max, 0, 180);
 }
 
-void ServoMotor::setAngle(uint16_t value) {
+void ServoMotorClass::setAngle(uint16_t value) {
     this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max));
 }
 
-uint16_t ServoMotor::getMicroseconds() {
+uint16_t ServoMotorClass::getMicroseconds() {
     if (this->index != SERVOMOTOR_INVALID) {
         return TICKS_TO_US(servos[this->index].ticks);
     } else {
@@ -90,7 +90,7 @@ uint16_t ServoMotor::getMicroseconds() {
     }
 }
 
-void ServoMotor::setMicroseconds(uint16_t value) {
+void ServoMotorClass::setMicroseconds(uint16_t value) {
     if (this->index != SERVOMOTOR_INVALID) {
         uint16_t ticks = US_TO_TICKS(value);
 
@@ -99,3 +99,5 @@ void ServoMotor::setMicroseconds(uint16_t value) {
         }
     }
 }
+
+ServoMotorClass ServoMotor;

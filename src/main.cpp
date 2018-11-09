@@ -32,7 +32,9 @@ int main()
     TWI.setOnRequestHandler(twiOnRequest);
 
     Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer5.setInterruptHandler(TIMER5_ISR_OUTPUT_COMPARE_A, onTimer5CompareA);
+    Timer5.setInterruptHandler(TIMER5_ISR_OUTPUT_COMPARE_A, [](){
+        Servo.update(&TCNT5, &OCR5A);
+    });
 
     sei();
 
