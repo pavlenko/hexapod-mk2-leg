@@ -11,13 +11,7 @@
 
 class ServoMotorClass
 {
-private:
-    uint8_t index;
-    uint16_t min;
-    uint16_t max;
 public:
-    ServoMotorClass();
-
     /**
      * Attach servomotor to PIN of specific PORT
      *
@@ -109,6 +103,12 @@ public:
      */
     void setMicroseconds(uint8_t index, uint16_t value);
 
+    /**
+     * Update servo motors from timer interrupt
+     *
+     * @param TCNTn
+     * @param OCRnA
+     */
     void update(volatile uint16_t *TCNTn, volatile uint16_t *OCRnA);
 };
 
