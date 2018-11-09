@@ -1,3 +1,8 @@
+#define SERVOMOTOR_USE_TIMER1 1
+#define SERVOMOTOR_USE_TIMER3 1
+#define SERVOMOTOR_USE_TIMER4 1
+#define SERVOMOTOR_USE_TIMER5 1
+
 #include <ES.h>
 #include <ServoMotor.h>
 #include <Timer.h>
@@ -31,9 +36,9 @@ int main()
 
     TWI.setOnRequestHandler(twiOnRequest);
 
-    Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer5.setInterruptHandler(TIMER5_ISR_OUTPUT_COMPARE_A, [](){
-        Servo.update(&TCNT5, &OCR5A);
+    Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    Timer1.setInterruptHandler(TIMER1_ISR_OUTPUT_COMPARE_A, [](){
+        ServoMotor.update(SERVOMOTOR_TIMER1, &TCNT5, &OCR5A);
     });
 
     sei();

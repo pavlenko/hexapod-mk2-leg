@@ -3,12 +3,11 @@
 #include <util/atomic.h>
 #include <stdint.h>
 
-#define SERVOMOTOR_TOTAL 10 //TODO
-
 //TODO check dependency of timers prescaller
 #define TICKS_PER_US() (F_CPU / 1000000L)
 #define US_TO_TICKS(_val_) ((uint16_t) (_val_ * TICKS_PER_US()))
 #define TICKS_TO_US(_val_) ((uint16_t) (_val_ / TICKS_PER_US()))
+#define REFRESH_US 20000U
 
 typedef struct {
     uint8_t number: 3;
@@ -25,7 +24,7 @@ typedef struct {
 
 static volatile uint8_t count = 0;
 static volatile servo_t servos[SERVOMOTOR_TOTAL];
-static volatile int8_t channels[4];
+static volatile int8_t channels[SERVOMOTOR_TIMER_COUNT];
 
 long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -117,15 +116,13 @@ void ServoMotorClass::setMicroseconds(uint8_t index, uint16_t value) {
     }
 }
 
-void ServoMotorClass::update(volatile uint16_t *TCNTn, volatile uint16_t *OCRnA) {
+void ServoMotorClass::update(ServomotorTimer timer, volatile uint16_t *TCNTn, volatile uint16_t *OCRnA) {
     uint8_t index;
-
-    //TODO set values via timer methods, add channels support or resolve from timer instance
 
     if (channels[timer] < 0) {
         *TCNTn = 0;
     } else {
-        index = SM_INDEX(timer, channels[timer]);
+        index = (timer * SERVOMOTOR_PER_TIMER) + channels[timer];
 
         if (index < count && servos[index].pin.attached) {
             *(servos[index].port) &= ~_BV(servos[index].pin.number);
@@ -133,17 +130,18 @@ void ServoMotorClass::update(volatile uint16_t *TCNTn, volatile uint16_t *OCRnA)
     }
 
     channels[timer]++;
-    index = SM_INDEX(timer, channels[timer]);
 
-    if (index < count && channels[timer] < SM_PER_TIMER) {
+    index = (timer * SERVOMOTOR_PER_TIMER) + channels[timer];
+
+    if (index < count && channels[timer] < SERVOMOTOR_PER_TIMER) {
         *OCRnA = *TCNTn + servos[index].ticks;
 
         if (servos[index].pin.attached) {
             *(servos[index].port) |= _BV(servos[index].pin.number);
         }
     } else {
-        if (*TCNTn + 4 < US_TO_TICKS(SM_REFRESH_US)) {
-            *OCRnA = (uint16_t) US_TO_TICKS(SM_REFRESH_US);
+        if (*TCNTn + 4 < US_TO_TICKS(REFRESH_US)) {
+            *OCRnA = (uint16_t) US_TO_TICKS(REFRESH_US);
         } else {
             *OCRnA = *TCNTn + 4;
         }

@@ -9,6 +9,44 @@
 
 #define SERVOMOTOR_INVALID 255
 
+#ifndef SERVOMOTOR_PER_TIMER
+#define SERVOMOTOR_PER_TIMER 10
+#endif
+
+#ifndef SERVOMOTOR_USE_TIMER1
+#define SERVOMOTOR_USE_TIMER1 0
+#endif
+
+#ifndef SERVOMOTOR_USE_TIMER3
+#define SERVOMOTOR_USE_TIMER3 0
+#endif
+
+#ifndef SERVOMOTOR_USE_TIMER4
+#define SERVOMOTOR_USE_TIMER4 0
+#endif
+
+#ifndef SERVOMOTOR_USE_TIMER5
+#define SERVOMOTOR_USE_TIMER5 0
+#endif
+
+enum ServomotorTimer {
+#if defined(TCNT1) && SERVOMOTOR_USE_TIMER1
+    SERVOMOTOR_TIMER1,
+#endif
+#if defined(TCNT3) && SERVOMOTOR_USE_TIMER3
+    SERVOMOTOR_TIMER3,
+#endif
+#if defined(TCNT4) && SERVOMOTOR_USE_TIMER4
+    SERVOMOTOR_TIMER4,
+#endif
+#if defined(TCNT5) && SERVOMOTOR_USE_TIMER5
+    SERVOMOTOR_TIMER5,
+#endif
+    SERVOMOTOR_TIMER_COUNT
+};
+
+#define SERVOMOTOR_TOTAL (SERVOMOTOR_PER_TIMER * SERVOMOTOR_TIMER_COUNT)
+
 class ServoMotorClass
 {
 public:
@@ -106,10 +144,11 @@ public:
     /**
      * Update servo motors from timer interrupt
      *
+     * @param timer
      * @param TCNTn
      * @param OCRnA
      */
-    void update(volatile uint16_t *TCNTn, volatile uint16_t *OCRnA);
+    void update(ServomotorTimer timer, volatile uint16_t *TCNTn, volatile uint16_t *OCRnA);
 };
 
 extern ServoMotorClass ServoMotor;
