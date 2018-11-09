@@ -25,6 +25,7 @@ typedef struct {
 
 static volatile uint8_t count = 0;
 static volatile servo_t servos[SERVOMOTOR_TOTAL];
+static volatile int8_t channels[4];
 
 long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -117,7 +118,38 @@ void ServoMotorClass::setMicroseconds(uint8_t index, uint16_t value) {
 }
 
 void ServoMotorClass::update(volatile uint16_t *TCNTn, volatile uint16_t *OCRnA) {
-    //TODO ISR handler
+    uint8_t index;
+
+    //TODO set values via timer methods, add channels support or resolve from timer instance
+
+    if (channels[timer] < 0) {
+        *TCNTn = 0;
+    } else {
+        index = SM_INDEX(timer, channels[timer]);
+
+        if (index < count && servos[index].pin.attached) {
+            *(servos[index].port) &= ~_BV(servos[index].pin.number);
+        }
+    }
+
+    channels[timer]++;
+    index = SM_INDEX(timer, channels[timer]);
+
+    if (index < count && channels[timer] < SM_PER_TIMER) {
+        *OCRnA = *TCNTn + servos[index].ticks;
+
+        if (servos[index].pin.attached) {
+            *(servos[index].port) |= _BV(servos[index].pin.number);
+        }
+    } else {
+        if (*TCNTn + 4 < US_TO_TICKS(SM_REFRESH_US)) {
+            *OCRnA = (uint16_t) US_TO_TICKS(SM_REFRESH_US);
+        } else {
+            *OCRnA = *TCNTn + 4;
+        }
+
+        channels[timer] = -1;
+    }
 }
 
 ServoMotorClass ServoMotor;
