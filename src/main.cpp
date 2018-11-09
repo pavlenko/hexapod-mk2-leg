@@ -38,7 +38,7 @@ int main()
 
     Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer1.setInterruptHandler(TIMER1_ISR_OUTPUT_COMPARE_A, [](){
-        ServoMotor.update(SERVOMOTOR_TIMER1, &TCNT5, &OCR5A);
+        ServoMotor.update(SERVOMOTOR_TIMER1, &TCNT1, &OCR1A);
     });
 
     sei();

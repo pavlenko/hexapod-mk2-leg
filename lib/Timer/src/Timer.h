@@ -1,7 +1,7 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#define __AVR_ATmega2560__ 1 // For test only
+//#define __AVR_ATmega2560__ 1 // For test only
 //#define __AVR_ATmega128A__ 1
 
 #include <avr/io.h>
@@ -14,18 +14,6 @@
 // ATMEGA 64L: TCCR0, TCNT0, OCR0, TIMSK, TIFR
 // ATMEGA 128L: TCCR0, TCNT0, OCR0, TIMSK, TIFR
 // ATMEGA 2560: TCCR0A/B, TCNT0, OCR0A/B, TIMSK0, TIFR0
-
-// Unusable:
-#if SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x92 // ATMEGA 4x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x93// ATMEGA 8x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x94// ATMEGA 16x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x95// ATMEGA 32x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x96// ATMEGA 64x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x97// ATMEGA 128x
-#elif SIGNATURE_0 == 0x1E && SIGNATURE_1 == 0x98// ATMEGA 256x
-#endif
-
-#define TIMER_CLOCK_MASK 0b11111000
 
 typedef void (*TimerInterruptHandler_t) ();
 
@@ -188,9 +176,23 @@ public:
 
 #ifdef TCNT1
 
+enum Timer1Interrupt {
+    TIMER1_ISR_OVERFLOW = TOIE1
+    ,TIMER1_ISR_OUTPUT_COMPARE_A = OCIE1A
+    ,TIMER1_ISR_OUTPUT_COMPARE_B = OCIE1B
+#ifdef OCIE1C
+    ,TIMER1_ISR_OUTPUT_COMPARE_C = OCIE1C
+#endif
+#ifdef ICIE1
+    ,TIMER1_ISR_INPUT_CAPTURE = ICIE1
+#else
+    ,TIMER1_ISR_INPUT_CAPTURE = TICIE1
+#endif
+};
+
 class Timer1Class {
 private:
-    volatile TimerInterruptHandler_t handlers[1];
+    volatile TimerInterruptHandler_t handlers[8];
 public:
     /**
      * @param clockSource
@@ -203,12 +205,28 @@ public:
      * @param code
      * @param handlerPtr
      */
-    void setInterruptHandler(uint8_t code, TimerInterruptHandler_t handlerPtr) {}
+    void setInterruptHandler(Timer1Interrupt code, TimerInterruptHandler_t handlerPtr) {
+        this->handlers[code] = handlerPtr;
+
+        if (handlerPtr) {
+#ifdef TIMSK3
+            TIMSK3 |= _BV(code);
+#else
+            TIMSK |= _BV(code);
+#endif
+        } else {
+#ifdef TIMSK3
+            TIMSK3 &= ~_BV(code);
+#else
+            TIMSK &= ~_BV(code);
+#endif
+        }
+    }
 
     /**
      * @param code
      */
-    void triggerInterrupt(uint8_t code) {
+    void triggerInterrupt(Timer1Interrupt code) {
         if (this->handlers[code]) {
             this->handlers[code]();
         }
@@ -224,10 +242,10 @@ extern Timer1Class Timer1;
 enum Timer2Interrupt {
     TIMER2_ISR_OVERFLOW = TOIE2
 #ifdef OCIE2A
-    ,TIMER2_ISR_OUTPUT_COMPARE   = OCIE2A,
+    ,TIMER2_ISR_OUTPUT_COMPARE_A = OCIE2A
     ,TIMER2_ISR_OUTPUT_COMPARE_B = OCIE2B
 #else
-    ,TIMER2_ISR_OUTPUT_COMPARE = OCIE2
+    ,TIMER2_ISR_OUTPUT_COMPARE_A = OCIE2
 #endif
 };
 

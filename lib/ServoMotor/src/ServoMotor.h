@@ -1,6 +1,7 @@
 #ifndef SERVOMOTOR_H
 #define SERVOMOTOR_H
 
+#include <avr/io.h>
 #include <stdint.h>
 
 #define SERVOMOTOR_PULSE_MIN 544
