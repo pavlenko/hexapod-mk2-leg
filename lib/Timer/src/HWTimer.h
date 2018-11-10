@@ -1,12 +1,21 @@
 #ifndef HW_TIMER_H
 #define HW_TIMER_H
 
+//#define __AVR_ATmega8__ 1
+//#define __AVR_ATmega32__ 1
+//#define __AVR_ATmega128__ 1
 #define __AVR_ATmega2560__ 1
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#define HW_TIMER_INTERRUPT_OVERFLOW        0
+#define HW_TIMER_INTERRUPT_COMPARE_MATCH_A 1
+#define HW_TIMER_INTERRUPT_COMPARE_MATCH_B 2
+#define HW_TIMER_INTERRUPT_COMPARE_MATCH_C 3
+#define HW_TIMER_INTERRUPT_CAPTURE_INPUT   4
 
 #if defined (TCCR5A)
 // Devices with Timer 5, have 4 16 bit timers (i.e Timer 1, 3, 4, 5)
@@ -75,28 +84,42 @@ ISR(TIMER5_OVF_vect);
 ISR(TIMER5_CAPT_vect);
 #endif
 
-class HWTimer8Bit {
+typedef struct {
+    volatile uint8_t *value;
+    int8_t TOIEn: 4;
+    int8_t OCIEnA: 4;
+    int8_t OCIEnB: 4;
+    int8_t OCIEnC: 4;
+    int8_t ICIEn: 4;
+} TIMSK_t;
+
+class HWTimerClass {
 protected:
-    uint8_t _timerNumber;
-    uint8_t _channelCount;
     // Control registers
-    volatile uint8_t *_TIMSKn;
+    TIMSK_t _TIMSKn;
     volatile uint8_t *_TCCRnA;
     volatile uint8_t *_TCCRnB;
+public:
+    HWTimerClass();
+    void setInterruptEnabled(uint8_t interrupt, bool enabled);
+};
+
+class HWTimer8Bit: public HWTimerClass {
+protected:
+    uint8_t _channelCount;
     // Value registers
     volatile uint8_t *_TCNTn;
     volatile uint8_t *_OCRnA;
     volatile uint8_t *_OCRnB;
     // User function pointers
-    void (*overflowFunction)();
-    void (*compareMatchAFunction)();
-    void (*compareMatchBFunction)();
-    void (*captureEventFunction)();
+    void (*_onOverflow)();
+    void (*_onCompareMatchA)();
+    void (*_onCompareMatchB)();
 public:
     HWTimer8Bit();
 };
 
-class HWTimer0Class: HWTimer8Bit {
+class HWTimer0Class: public HWTimer8Bit {
 #if defined (TIMER0_COMP_vect)
     friend void TIMER0_COMP_vect();
 #else
@@ -111,7 +134,7 @@ public:
 extern HWTimer0Class HWTimer0;
 
 #if HW_TIMER_8BIT_COUNT == 2
-class HWTimer2Class: HWTimer8Bit {
+class HWTimer2Class: public HWTimer8Bit {
 #if defined (TIMER2_COMP_vect)
     friend void TIMER2_COMP_vect();
 #else
@@ -126,30 +149,25 @@ public:
 extern HWTimer2Class HWTimer2;
 #endif
 
-class HWTimer16Bit {
+class HWTimer16Bit: public HWTimerClass {
 protected:
-    uint8_t _timerNumber;
     uint8_t _channelCount;
-    // Control registers
-    volatile uint8_t *_TIMSKn;
-    volatile uint8_t *_TCCRnA;
-    volatile uint8_t *_TCCRnB;
     // Value registers
     volatile uint16_t *_TCNTn;
     volatile uint16_t *_OCRnA;
     volatile uint16_t *_OCRnB;
     volatile uint16_t *_OCRnC;
     // User function pointers
-    void (*overflowFunction)();
-    void (*compareMatchAFunction)();
-    void (*compareMatchBFunction)();
-    void (*compareMatchCFunction)();
-    void (*captureEventFunction)();
+    void (*_onOverflow)();
+    void (*_onCompareMatchA)();
+    void (*_onCompareMatchB)();
+    void (*_onCompareMatchC)();
+    void (*_onCaptureInput)();
 public:
     HWTimer16Bit();
 };
 
-class HWTimer1Class: HWTimer16Bit {
+class HWTimer1Class: public HWTimer16Bit {
     friend void TIMER1_COMPA_vect();
     friend void TIMER1_COMPB_vect();
 #if defined (TIMER1_COMPC_vect)
@@ -164,7 +182,7 @@ public:
 extern HWTimer1Class HWTimer1;
 
 #if (HW_TIMER_16BIT_COUNT > 1)
-class HWTimer3Class: HWTimer16Bit {
+class HWTimer3Class: public HWTimer16Bit {
     friend void TIMER3_COMPA_vect();
     friend void TIMER3_COMPB_vect();
     friend void TIMER3_COMPC_vect();
@@ -178,7 +196,7 @@ extern HWTimer3Class HWTimer3;
 #endif
 
 #if (HW_TIMER_16BIT_COUNT > 2)
-class HWTimer4Class: HWTimer16Bit {
+class HWTimer4Class: public HWTimer16Bit {
     friend void TIMER4_COMPA_vect();
     friend void TIMER4_COMPB_vect();
     friend void TIMER4_COMPC_vect();
@@ -190,7 +208,7 @@ public:
 
 extern HWTimer4Class HWTimer4;
 
-class HWTimer5Class: HWTimer16Bit {
+class HWTimer5Class: public HWTimer16Bit {
     friend void TIMER5_COMPA_vect();
     friend void TIMER5_COMPB_vect();
     friend void TIMER5_COMPC_vect();

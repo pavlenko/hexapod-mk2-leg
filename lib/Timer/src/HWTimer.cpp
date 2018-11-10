@@ -5,19 +5,71 @@
 #include <stddef.h>
 #include <stdint.h>
 
+HWTimerClass::HWTimerClass() = default;
+
+void HWTimerClass::setInterruptEnabled(uint8_t interrupt, bool enabled) {
+    int8_t flag = -1;
+
+    volatile uint8_t *value = _TIMSKn.value;
+
+    switch (interrupt) {
+        case HW_TIMER_INTERRUPT_OVERFLOW:
+            flag = _TIMSKn.TOIEn;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_A:
+            flag = _TIMSKn.OCIEnA;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_B:
+            flag = _TIMSKn.OCIEnB;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_C:
+#if defined (ETIMSK)
+            // Compare match 3 channel flags for timer 1 and timer 3 both placed in ETIMSK register
+            if (value == &TIMSK) {
+                value = &ETIMSK;
+            }
+#endif
+            flag = _TIMSKn.OCIEnC;
+            break;
+        case HW_TIMER_INTERRUPT_CAPTURE_INPUT:
+            flag = _TIMSKn.ICIEn;
+            break;
+    }
+
+    if (flag >= 0) {
+        *value = (uint8_t) ((*value & ~_BV(flag)) | (enabled << flag));
+    }
+}
+
 HWTimer8Bit::HWTimer8Bit() = default;
 
 HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
     _TCNTn = &TCNT0;
 #if defined (TIMSK)
-    _TIMSKn = &TIMSK;
+    _TIMSKn = {
+        .value  = &TIMSK,
+        .TOIEn  = TOIE0,
+        .OCIEnA = OCIE0,
+        .OCIEnB = -1,
+        .OCIEnC = -1,
+        .ICIEn  = -1,
+    };
+
     _TCCRnA = &TCCR0;
     _TCCRnB = &TCCR0;
     _OCRnA  = &OCR0;
     _OCRnB  = NULL;
     _channelCount = 1;
 #else
-    _TIMSKn = &TIMSK0;
+    _TIMSKn = {
+        .value  = &TIMSK0,
+        .TOIEn  = TOIE0,
+        .OCIEnA = OCIE0A,
+        .OCIEnB = OCIE0B,
+        .OCIEnC = -1,
+        .ICIEn  = -1,
+    };
+
     _TCCRnA = &TCCR0A;
     _TCCRnB = &TCCR0B;
     _OCRnA  = &OCR0A;
@@ -31,28 +83,28 @@ HWTimer0Class HWTimer0;
 #if defined (TIMER0_COMP_vect)
 ISR(TIMER0_COMP_vect)
 {
-    if (Timer0.compareMatchAFunction != NULL) {
-        Timer0.compareMatchAFunction();
+    if (HWTimer0._onCompareMatchA) {
+        HWTimer0._onCompareMatchA();
     }
 }
 #else
 ISR(TIMER0_COMPA_vect)
 {
-    if (HWTimer0.compareMatchAFunction != NULL) {
-        HWTimer0.compareMatchAFunction();
+    if (HWTimer0._onCompareMatchA) {
+        HWTimer0._onCompareMatchA();
     }
 }
 ISR(TIMER0_COMPB_vect)
 {
-    if (HWTimer0.compareMatchBFunction != NULL) {
-        HWTimer0.compareMatchBFunction();
+    if (HWTimer0._onCompareMatchB) {
+        HWTimer0._onCompareMatchB();
     }
 }
 #endif
 ISR(TIMER0_OVF_vect)
 {
-    if (HWTimer0.overflowFunction != NULL) {
-        HWTimer0.overflowFunction();
+    if (HWTimer0._onOverflow) {
+        HWTimer0._onOverflow();
     }
 }
 
@@ -60,14 +112,30 @@ ISR(TIMER0_OVF_vect)
 HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
     _TCNTn = &TCNT2;
 #if defined (TIMSK)
-    _TIMSKn = &TIMSK;
+    _TIMSKn = {
+        .value  = &TIMSK,
+        .TOIEn  = TOIE2,
+        .OCIEnA = OCIE2,
+        .OCIEnB = -1,
+        .OCIEnC = -1,
+        .ICIEn  = -1,
+    };
+
     _TCCRnA = &TCCR2;
     _TCCRnB = &TCCR2;
     _OCRnA  = &OCR2;
     _OCRnA  = NULL;
     _channelCount = 1;
 #else
-    _TIMSKn = &TIMSK2;
+    _TIMSKn = {
+        .value  = &TIMSK2,
+        .TOIEn  = TOIE2,
+        .OCIEnA = OCIE2A,
+        .OCIEnB = OCIE2B,
+        .OCIEnC = -1,
+        .ICIEn  = -1,
+    };
+
     _TCCRnA = &TCCR2A;
     _TCCRnB = &TCCR2B;
     _OCRnA  = &OCR2A;
@@ -81,28 +149,28 @@ HWTimer2Class HWTimer2;
 #if defined (TIMER2_COMP_vect)
 ISR(TIMER2_COMP_vect)
 {
-    if (HWTimer2.compareMatchAFunction != NULL) {
-        HWTimer2.compareMatchAFunction();
+    if (HWTimer2._onCompareMatchA) {
+        HWTimer2._onCompareMatchA();
     }
 }
 #else
 ISR(TIMER2_COMPA_vect)
 {
-    if (HWTimer2.compareMatchAFunction != NULL) {
-        HWTimer2.compareMatchAFunction();
+    if (HWTimer2._onCompareMatchA) {
+        HWTimer2._onCompareMatchA();
     }
 }
 ISR(TIMER2_COMPB_vect)
 {
-    if (HWTimer2.compareMatchBFunction != NULL) {
-        HWTimer2.compareMatchBFunction();
+    if (HWTimer2._onCompareMatchB) {
+        HWTimer2._onCompareMatchB();
     }
 }
 #endif
 ISR(TIMER2_OVF_vect)
 {
-    if (HWTimer2.overflowFunction != NULL) {
-        HWTimer2.overflowFunction();
+    if (HWTimer2._onOverflow) {
+        HWTimer2._onOverflow();
     }
 }
 #endif
@@ -111,16 +179,35 @@ HWTimer16Bit::HWTimer16Bit() = default;
 
 HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {
 #if defined (TIMSK)
-    _TIMSKn = &TIMSK;
+    _TIMSKn = {
+        .value  = &TIMSK,
+        .TOIEn  = TOIE1,
+        .OCIEnA = OCIE1A,
+        .OCIEnB = OCIE1B,
+#if defined (OCR1C)
+        .OCIEnC = OCIE1C,
 #else
-    _TIMSKn = &TIMSK1;
+        .OCIEnC = -1,
 #endif
+        .ICIEn  = TICIE1,
+    };
+#else
+    _TIMSKn = {
+        .value  = &TIMSK1,
+        .TOIEn  = TOIE1,
+        .OCIEnA = OCIE1A,
+        .OCIEnB = OCIE1B,
+        .OCIEnC = OCIE1C,
+        .ICIEn  = ICIE1,
+    };
+#endif
+
     _TCCRnA = &TCCR1A;
     _TCCRnB = &TCCR1B;
     _TCNTn  = &TCNT1;
     _OCRnA  = &OCR1A;
     _OCRnB  = &OCR1B;
-#if defined (OCR1CH)
+#if defined (OCR1C)
     _OCRnC  = &OCR1C;
     _channelCount = 3;
 #else
@@ -133,44 +220,59 @@ HWTimer1Class HWTimer1;
 
 ISR(TIMER1_COMPA_vect)
 {
-    if (HWTimer1.compareMatchAFunction != NULL) {
-        HWTimer1.compareMatchAFunction();
+    if (HWTimer1._onCompareMatchA) {
+        HWTimer1._onCompareMatchA();
     }
 }
 ISR(TIMER1_COMPB_vect)
 {
-    if (HWTimer1.compareMatchBFunction != NULL) {
-        HWTimer1.compareMatchBFunction();
+    if (HWTimer1._onCompareMatchB) {
+        HWTimer1._onCompareMatchB();
     }
 }
 #if defined (TIMER1_COMPC_vect)
 ISR(TIMER1_COMPC_vect)
 {
-    if (HWTimer1.compareMatchCFunction != NULL) {
-        HWTimer1.compareMatchCFunction();
+    if (HWTimer1._onCompareMatchC) {
+        HWTimer1._onCompareMatchC();
     }
 }
 #endif
 ISR(TIMER1_OVF_vect)
 {
-    if (HWTimer1.overflowFunction != NULL) {
-        HWTimer1.overflowFunction();
+    if (HWTimer1._onOverflow) {
+        HWTimer1._onOverflow();
     }
 }
 ISR(TIMER1_CAPT_vect)
 {
-    if (HWTimer1.captureEventFunction != NULL) {
-        HWTimer1.captureEventFunction();
+    if (HWTimer1._onCaptureInput) {
+        HWTimer1._onCaptureInput();
     }
 }
 
 #if (HW_TIMER_16BIT_COUNT > 1)
 HWTimer3Class::HWTimer3Class(): HWTimer16Bit() {
 #if defined (TIMSK)
-    _TIMSKn = &ETIMSK;
+    _TIMSKn = {
+        .value  = &ETIMSK,
+        .TOIEn  = TOIE3,
+        .OCIEnA = OCIE3A,
+        .OCIEnB = OCIE3B,
+        .OCIEnC = OCIE3C,
+        .ICIEn  = TICIE3,
+    };
 #else
-    _TIMSKn = &TIMSK3;
+    _TIMSKn = {
+        .value  = &TIMSK3,
+        .TOIEn  = TOIE3,
+        .OCIEnA = OCIE3A,
+        .OCIEnB = OCIE3B,
+        .OCIEnC = OCIE3C,
+        .ICIEn  = ICIE3,
+    };
 #endif
+
     _TCCRnA = &TCCR3A;
     _TCCRnB = &TCCR3B;
     _TCNTn  = &TCNT3;
@@ -189,39 +291,47 @@ HWTimer3Class HWTimer3;
 
 ISR(TIMER3_COMPA_vect)
 {
-    if (HWTimer3.compareMatchAFunction != NULL) {
-        HWTimer3.compareMatchAFunction();
+    if (HWTimer3._onCompareMatchA) {
+        HWTimer3._onCompareMatchA();
     }
 }
 ISR(TIMER3_COMPB_vect)
 {
-    if (HWTimer3.compareMatchBFunction != NULL) {
-        HWTimer3.compareMatchBFunction();
+    if (HWTimer3._onCompareMatchB) {
+        HWTimer3._onCompareMatchB();
     }
 }
 ISR(TIMER3_COMPC_vect)
 {
-    if (HWTimer3.compareMatchCFunction != NULL) {
-        HWTimer3.compareMatchCFunction();
+    if (HWTimer3._onCompareMatchC) {
+        HWTimer3._onCompareMatchC();
     }
 }
 ISR(TIMER3_OVF_vect)
 {
-    if (HWTimer3.overflowFunction != NULL) {
-        HWTimer3.overflowFunction();
+    if (HWTimer3._onOverflow) {
+        HWTimer3._onOverflow();
     }
 }
 ISR(TIMER3_CAPT_vect)
 {
-    if (HWTimer3.captureEventFunction != NULL) {
-        HWTimer3.captureEventFunction();
+    if (HWTimer3._onCaptureInput) {
+        HWTimer3._onCaptureInput();
     }
 }
 #endif
 
 #if (HW_TIMER_16BIT_COUNT > 2)
 HWTimer4Class::HWTimer4Class(): HWTimer16Bit() {
-    _TIMSKn = &TIMSK4;
+    _TIMSKn = {
+        .value  = &TIMSK4,
+        .TOIEn  = TOIE4,
+        .OCIEnA = OCIE4A,
+        .OCIEnB = OCIE4B,
+        .OCIEnC = OCIE4C,
+        .ICIEn  = ICIE4,
+    };
+
     _TCCRnA = &TCCR4A;
     _TCCRnB = &TCCR4B;
     _TCNTn  = &TCNT4;
@@ -235,37 +345,45 @@ HWTimer4Class HWTimer4;
 
 ISR(TIMER4_COMPA_vect)
 {
-    if (HWTimer4.compareMatchAFunction != NULL) {
-        HWTimer4.compareMatchAFunction();
+    if (HWTimer4._onCompareMatchA) {
+        HWTimer4._onCompareMatchA();
     }
 }
 ISR(TIMER4_COMPB_vect)
 {
-    if (HWTimer4.compareMatchBFunction != NULL) {
-        HWTimer4.compareMatchBFunction();
+    if (HWTimer4._onCompareMatchB) {
+        HWTimer4._onCompareMatchB();
     }
 }
 ISR(TIMER4_COMPC_vect)
 {
-    if (HWTimer4.compareMatchCFunction != NULL) {
-        HWTimer4.compareMatchCFunction();
+    if (HWTimer4._onCompareMatchC) {
+        HWTimer4._onCompareMatchC();
     }
 }
 ISR(TIMER4_OVF_vect)
 {
-    if (HWTimer4.overflowFunction != NULL) {
-        HWTimer4.overflowFunction();
+    if (HWTimer4._onOverflow) {
+        HWTimer4._onOverflow();
     }
 }
 ISR(TIMER4_CAPT_vect)
 {
-    if (HWTimer4.captureEventFunction != NULL) {
-        HWTimer4.captureEventFunction();
+    if (HWTimer4._onCaptureInput) {
+        HWTimer4._onCaptureInput();
     }
 }
 
 HWTimer5Class::HWTimer5Class(): HWTimer16Bit() {
-    _TIMSKn = &TIMSK5;
+    _TIMSKn = {
+        .value  = &TIMSK5,
+        .TOIEn  = TOIE5,
+        .OCIEnA = OCIE5A,
+        .OCIEnB = OCIE5B,
+        .OCIEnC = OCIE5C,
+        .ICIEn  = ICIE5,
+    };
+
     _TCCRnA = &TCCR5A;
     _TCCRnB = &TCCR5B;
     _TCNTn  = &TCNT5;
@@ -279,32 +397,32 @@ HWTimer5Class HWTimer5;
 
 ISR(TIMER5_COMPA_vect)
 {
-    if (HWTimer5.compareMatchAFunction != NULL) {
-        HWTimer5.compareMatchAFunction();
+    if (HWTimer5._onCompareMatchA) {
+        HWTimer5._onCompareMatchA();
     }
 }
 ISR(TIMER5_COMPB_vect)
 {
-    if (HWTimer5.compareMatchBFunction != NULL) {
-        HWTimer5.compareMatchBFunction();
+    if (HWTimer5._onCompareMatchB) {
+        HWTimer5._onCompareMatchB();
     }
 }
 ISR(TIMER5_COMPC_vect)
 {
-    if (HWTimer5.compareMatchCFunction != NULL) {
-        HWTimer5.compareMatchCFunction();
+    if (HWTimer5._onCompareMatchC) {
+        HWTimer5._onCompareMatchC();
     }
 }
 ISR(TIMER5_OVF_vect)
 {
-    if (HWTimer5.overflowFunction != NULL) {
-        HWTimer5.overflowFunction();
+    if (HWTimer5._onOverflow) {
+        HWTimer5._onOverflow();
     }
 }
 ISR(TIMER5_CAPT_vect)
 {
-    if (HWTimer5.captureEventFunction != NULL) {
-        HWTimer5.captureEventFunction();
+    if (HWTimer5._onCaptureInput) {
+        HWTimer5._onCaptureInput();
     }
 }
 #endif
