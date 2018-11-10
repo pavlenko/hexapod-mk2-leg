@@ -45,6 +45,36 @@ ISR(TIMER2_COMPB_vect);
 ISR(TIMER2_OVF_vect);
 #endif
 
+ISR(TIMER1_COMPA_vect);
+ISR(TIMER1_COMPB_vect);
+#if defined (TIMER1_COMPC_vect)
+ISR(TIMER1_COMPC_vect);
+#endif
+ISR(TIMER1_OVF_vect);
+ISR(TIMER1_CAPT_vect);
+
+#if (HW_TIMER_16BIT_COUNT > 1)
+ISR(TIMER3_COMPA_vect);
+ISR(TIMER3_COMPB_vect);
+ISR(TIMER3_COMPC_vect);
+ISR(TIMER3_OVF_vect);
+ISR(TIMER3_CAPT_vect);
+#endif
+
+#if (HW_TIMER_16BIT_COUNT > 2)
+ISR(TIMER4_COMPA_vect);
+ISR(TIMER4_COMPB_vect);
+ISR(TIMER4_COMPC_vect);
+ISR(TIMER4_OVF_vect);
+ISR(TIMER4_CAPT_vect);
+
+ISR(TIMER5_COMPA_vect);
+ISR(TIMER5_COMPB_vect);
+ISR(TIMER5_COMPC_vect);
+ISR(TIMER5_OVF_vect);
+ISR(TIMER5_CAPT_vect);
+#endif
+
 class HWTimer8Bit {
 protected:
     uint8_t _timerNumber;
@@ -120,6 +150,13 @@ public:
 };
 
 class HWTimer1Class: HWTimer16Bit {
+    friend void TIMER1_COMPA_vect();
+    friend void TIMER1_COMPB_vect();
+#if defined (TIMER1_COMPC_vect)
+    friend void TIMER1_COMPC_vect();
+#endif
+    friend void TIMER1_OVF_vect();
+    friend void TIMER1_CAPT_vect();
 public:
     HWTimer1Class();
 };
@@ -128,6 +165,11 @@ extern HWTimer1Class HWTimer1;
 
 #if (HW_TIMER_16BIT_COUNT > 1)
 class HWTimer3Class: HWTimer16Bit {
+    friend void TIMER3_COMPA_vect();
+    friend void TIMER3_COMPB_vect();
+    friend void TIMER3_COMPC_vect();
+    friend void TIMER3_OVF_vect();
+    friend void TIMER3_CAPT_vect();
 public:
     HWTimer3Class();
 };
@@ -137,6 +179,11 @@ extern HWTimer3Class HWTimer3;
 
 #if (HW_TIMER_16BIT_COUNT > 2)
 class HWTimer4Class: HWTimer16Bit {
+    friend void TIMER4_COMPA_vect();
+    friend void TIMER4_COMPB_vect();
+    friend void TIMER4_COMPC_vect();
+    friend void TIMER4_OVF_vect();
+    friend void TIMER4_CAPT_vect();
 public:
     HWTimer4Class();
 };
@@ -144,6 +191,11 @@ public:
 extern HWTimer4Class HWTimer4;
 
 class HWTimer5Class: HWTimer16Bit {
+    friend void TIMER5_COMPA_vect();
+    friend void TIMER5_COMPB_vect();
+    friend void TIMER5_COMPC_vect();
+    friend void TIMER5_OVF_vect();
+    friend void TIMER5_CAPT_vect();
 public:
     HWTimer5Class();
 };
