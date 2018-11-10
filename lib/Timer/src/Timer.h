@@ -233,7 +233,7 @@ public:
     }
 };
 
-extern Timer1Class Timer1;
+Timer1Class Timer1;
 
 #endif //TCNT1
 
