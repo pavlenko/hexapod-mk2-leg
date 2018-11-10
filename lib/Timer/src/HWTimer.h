@@ -3,19 +3,19 @@
 
 //#define __AVR_ATmega8__ 1
 //#define __AVR_ATmega32__ 1
-//#define __AVR_ATmega128__ 1
-#define __AVR_ATmega2560__ 1
+#define __AVR_ATmega128__ 1
+//#define __AVR_ATmega2560__ 1
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define HW_TIMER_INTERRUPT_OVERFLOW        0
-#define HW_TIMER_INTERRUPT_COMPARE_MATCH_A 1
-#define HW_TIMER_INTERRUPT_COMPARE_MATCH_B 2
-#define HW_TIMER_INTERRUPT_COMPARE_MATCH_C 3
-#define HW_TIMER_INTERRUPT_CAPTURE_INPUT   4
+//#define HW_TIMER_INTERRUPT_OVERFLOW        0
+//#define HW_TIMER_INTERRUPT_COMPARE_MATCH_A 1
+//#define HW_TIMER_INTERRUPT_COMPARE_MATCH_B 2
+//#define HW_TIMER_INTERRUPT_COMPARE_MATCH_C 3
+//#define HW_TIMER_INTERRUPT_CAPTURE_INPUT   4
 
 #if defined (TCCR5A)
 // Devices with Timer 5, have 4 16 bit timers (i.e Timer 1, 3, 4, 5)
@@ -84,6 +84,49 @@ ISR(TIMER5_OVF_vect);
 ISR(TIMER5_CAPT_vect);
 #endif
 
+enum HWTimerClockSource {
+    HW_TIMER_CLOCK_NONE,
+    HW_TIMER_CLOCK_NO_DIVIDE,
+    HW_TIMER_CLOCK_DIVIDE_BY_8,
+    HW_TIMER_CLOCK_DIVIDE_BY_64,
+    HW_TIMER_CLOCK_DIVIDE_BY_256,
+    HW_TIMER_CLOCK_DIVIDE_BY_1024,
+    HW_TIMER_CLOCK_EXTERNAL_BY_FALLING_EDGE,
+    HW_TIMER_CLOCK_EXTERNAL_BY_RISING_EDGE
+};
+
+#if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
+enum HWTimer0ClockSource {
+    HW_TIMER0_CLOCK_NONE,
+    HW_TIMER0_CLOCK_NO_DIVIDE,
+    HW_TIMER0_CLOCK_DIVIDE_BY_8,
+    HW_TIMER0_CLOCK_DIVIDE_BY_32,
+    HW_TIMER0_CLOCK_DIVIDE_BY_64,
+    HW_TIMER0_CLOCK_DIVIDE_BY_128,
+    HW_TIMER0_CLOCK_DIVIDE_BY_256,
+    HW_TIMER0_CLOCK_DIVIDE_BY_1024
+};
+#else
+enum HWTimer2ClockSource {
+    HW_TIMER2_CLOCK_NONE,
+    HW_TIMER2_CLOCK_NO_DIVIDE,
+    HW_TIMER2_CLOCK_DIVIDE_BY_8,
+    HW_TIMER2_CLOCK_DIVIDE_BY_32,
+    HW_TIMER2_CLOCK_DIVIDE_BY_64,
+    HW_TIMER2_CLOCK_DIVIDE_BY_128,
+    HW_TIMER2_CLOCK_DIVIDE_BY_256,
+    HW_TIMER2_CLOCK_DIVIDE_BY_1024
+};
+#endif
+
+enum HWTimerInterrupt {
+    HW_TIMER_INTERRUPT_OVERFLOW,
+    HW_TIMER_INTERRUPT_COMPARE_MATCH_A,
+    HW_TIMER_INTERRUPT_COMPARE_MATCH_B,
+    HW_TIMER_INTERRUPT_COMPARE_MATCH_C,
+    HW_TIMER_INTERRUPT_CAPTURE_INPUT
+};
+
 typedef struct {
     volatile uint8_t *value;
     int8_t TOIEn: 4;
@@ -101,7 +144,8 @@ protected:
     volatile uint8_t *_TCCRnB;
 public:
     HWTimerClass();
-    void setInterruptEnabled(uint8_t interrupt, bool enabled);
+    void setClockSource(HWTimerClockSource clockSource);
+    void setInterruptEnabled(HWTimerInterrupt interrupt, bool enabled);
 };
 
 class HWTimer8Bit: public HWTimerClass {
@@ -117,6 +161,7 @@ protected:
     void (*_onCompareMatchB)();
 public:
     HWTimer8Bit();
+    void setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)());
 };
 
 class HWTimer0Class: public HWTimer8Bit {
@@ -129,6 +174,9 @@ class HWTimer0Class: public HWTimer8Bit {
     friend void TIMER0_OVF_vect();
 public:
     HWTimer0Class();
+#if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
+    void setClockSource(HWTimer0ClockSource clockSource);
+#endif
 };
 
 extern HWTimer0Class HWTimer0;
@@ -144,6 +192,10 @@ class HWTimer2Class: public HWTimer8Bit {
     friend void TIMER2_OVF_vect();
 public:
     HWTimer2Class();
+#if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
+#else
+    void setClockSource(HWTimer2ClockSource clockSource);
+#endif
 };
 
 extern HWTimer2Class HWTimer2;
@@ -165,6 +217,7 @@ protected:
     void (*_onCaptureInput)();
 public:
     HWTimer16Bit();
+    void setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)());
 };
 
 class HWTimer1Class: public HWTimer16Bit {

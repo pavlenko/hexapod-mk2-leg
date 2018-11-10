@@ -7,7 +7,11 @@
 
 HWTimerClass::HWTimerClass() = default;
 
-void HWTimerClass::setInterruptEnabled(uint8_t interrupt, bool enabled) {
+void HWTimerClass::setClockSource(HWTimerClockSource clockSource) {
+    *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11111000) | clockSource);
+}
+
+void HWTimerClass::setInterruptEnabled(HWTimerInterrupt interrupt, bool enabled) {
     int8_t flag = -1;
 
     volatile uint8_t *value = _TIMSKn.value;
@@ -43,6 +47,26 @@ void HWTimerClass::setInterruptEnabled(uint8_t interrupt, bool enabled) {
 
 HWTimer8Bit::HWTimer8Bit() = default;
 
+void HWTimer8Bit::setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)()) {
+    switch (interrupt) {
+        case HW_TIMER_INTERRUPT_OVERFLOW:
+            _onOverflow = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_A:
+            _onCompareMatchA = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_B:
+            _onCompareMatchB = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_C:
+            flag = _TIMSKn.OCIEnC;
+            break;
+        case HW_TIMER_INTERRUPT_CAPTURE_INPUT:
+            flag = _TIMSKn.ICIEn;
+            break;
+    }
+}
+
 HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
     _TCNTn = &TCNT0;
 #if defined (TIMSK)
@@ -77,6 +101,12 @@ HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
     _channelCount = 2;
 #endif
 }
+
+#if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
+void HWTimer0Class::setClockSource(HWTimer0ClockSource clockSource) {
+    HWTimerClass::setClockSource((HWTimerClockSource) ((uint8_t) clockSource));
+}
+#endif
 
 HWTimer0Class HWTimer0;
 
@@ -144,6 +174,13 @@ HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
 #endif
 }
 
+#if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
+#else
+void HWTimer2Class::setClockSource(HWTimer2ClockSource clockSource) {
+    HWTimerClass::setClockSource((HWTimerClockSource) ((uint8_t) clockSource));
+}
+#endif
+
 HWTimer2Class HWTimer2;
 
 #if defined (TIMER2_COMP_vect)
@@ -176,6 +213,26 @@ ISR(TIMER2_OVF_vect)
 #endif
 
 HWTimer16Bit::HWTimer16Bit() = default;
+
+void HWTimer16Bit::setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)()) {
+    switch (interrupt) {
+        case HW_TIMER_INTERRUPT_OVERFLOW:
+            _onOverflow = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_A:
+            _onCompareMatchA = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_B:
+            _onCompareMatchB = handler;
+            break;
+        case HW_TIMER_INTERRUPT_COMPARE_MATCH_C:
+            _onCompareMatchC = handler;
+            break;
+        case HW_TIMER_INTERRUPT_CAPTURE_INPUT:
+            _onCaptureInput = handler;
+            break;
+    }
+}
 
 HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {
 #if defined (TIMSK)
