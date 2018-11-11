@@ -76,17 +76,17 @@ void HWTimer8Bit::setCountMode(uint8_t mode) {
 #endif
 }
 
-void HWTimer8Bit::setOutputModeA(uint8_t mode) {
+void HWTimer8Bit::setOutputModeA(HWTimerOutputMode_t mode) {
 #if defined (TIMSK)
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | (mode << 4));
 #else
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | ((mode & 0b00000011) << 6));
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | (mode << 6));
 #endif
 }
 
-void HWTimer8Bit::setOutputModeB(uint8_t mode) {
+void HWTimer8Bit::setOutputModeB(HWTimerOutputMode_t mode) {
 #if defined(TIMSK0)
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | (mode << 4));
 #endif
 }
 
@@ -264,16 +264,16 @@ void HWTimer16Bit::setCountMode(uint8_t mode) {
     *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11100111) | ((mode & 0b00001100) << 1));
 }
 
-void HWTimer16Bit::setOutputModeA(uint8_t mode) {
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | ((mode & 0b00000011) << 6));
+void HWTimer16Bit::setOutputModeA(HWTimerOutputMode_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | (mode << 6));
 }
 
-void HWTimer16Bit::setOutputModeB(uint8_t mode) {
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+void HWTimer16Bit::setOutputModeB(HWTimerOutputMode_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | (mode << 4));
 }
 
-void HWTimer16Bit::setOutputModeC(uint8_t mode) {
-    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11110011) | ((mode & 0b00000011) << 2));
+void HWTimer16Bit::setOutputModeC(HWTimerOutputMode_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11110011) | (mode << 2));
 }
 
 HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {

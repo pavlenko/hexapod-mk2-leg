@@ -127,6 +127,43 @@ typedef enum {
     HW_TIMER_INTERRUPT_CAPTURE_INPUT
 } HWTimerInterrupt_t;
 
+typedef enum {
+    HW_TIMER_8BIT_COUNT_NORMAL,
+    HW_TIMER_8BIT_COUNT_PWM_PHASE_CORRECT,
+    HW_TIMER_8BIT_COUNT_CTC,
+    HW_TIMER_8BIT_COUNT_FAST_PWM,
+    HW_TIMER_8BIT_COUNT_RESERVED_1,
+    HW_TIMER_8BIT_COUNT_PWM_PHASE_CORRECT_BY_OCR,
+    HW_TIMER_8BIT_COUNT_RESERVED_2,
+    HW_TIMER_8BIT_COUNT_FAST_PWM_BY_OCR
+} HWTimer8BitCountMode_t;
+
+typedef enum {
+    HW_TIMER_16BIT_COUNT_NORMAL,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_CORRECT_8,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_CORRECT_9,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_CORRECT_10,
+    HW_TIMER_16BIT_COUNT_CTC_BY_OCR,
+    HW_TIMER_16BIT_COUNT_FAST_PWM_8,
+    HW_TIMER_16BIT_COUNT_FAST_PWM_9,
+    HW_TIMER_16BIT_COUNT_FAST_PWM_10,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_FREQ_CORRECT_BY_ICR,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_FREQ_CORRECT_BY_OCR,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_CORRECT_BY_ICR,
+    HW_TIMER_16BIT_COUNT_PWM_PHASE_CORRECT_BY_OCR,
+    HW_TIMER_16BIT_COUNT_CTC_BY_ICR,
+    HW_TIMER_16BIT_COUNT_RESERVED,
+    HW_TIMER_16BIT_COUNT_FAST_PWM_BY_ICR,
+    HW_TIMER_16BIT_COUNT_FAST_PWM_BY_OCR,
+} HWTimer16BitCountMode_t;
+
+typedef enum {
+    HW_TIMER_OUTPUT_DISABLED,
+    HW_TIMER_OUTPUT_TOGGLE,
+    HW_TIMER_OUTPUT_CLEAR_UP,
+    HW_TIMER_OUTPUT_SET_UP
+} HWTimerOutputMode_t;
+
 typedef struct {
     volatile uint8_t *value;
     int8_t TOIEn: 4;
@@ -163,8 +200,8 @@ public:
     HWTimer8Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
     void setCountMode(uint8_t mode);
-    inline void setOutputModeA(uint8_t mode);
-    inline void setOutputModeB(uint8_t mode);
+    inline void setOutputModeA(HWTimerOutputMode_t mode);
+    inline void setOutputModeB(HWTimerOutputMode_t mode);
 };
 
 class HWTimer0Class: public HWTimer8Bit {
@@ -222,9 +259,9 @@ public:
     HWTimer16Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
     void setCountMode(uint8_t mode);
-    inline void setOutputModeA(uint8_t mode);
-    inline void setOutputModeB(uint8_t mode);
-    inline void setOutputModeC(uint8_t mode);
+    inline void setOutputModeA(HWTimerOutputMode_t mode);
+    inline void setOutputModeB(HWTimerOutputMode_t mode);
+    inline void setOutputModeC(HWTimerOutputMode_t mode);
 };
 
 class HWTimer1Class: public HWTimer16Bit {
