@@ -7,11 +7,11 @@
 
 HWTimerClass::HWTimerClass() = default;
 
-void HWTimerClass::setClockSource(HWTimerClockSource clockSource) {
+void HWTimerClass::setClockSource(HWTimerClockSource_t clockSource) {
     *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11111000) | clockSource);
 }
 
-void HWTimerClass::setInterruptEnabled(HWTimerInterrupt interrupt, bool enabled) {
+void HWTimerClass::setInterruptEnabled(HWTimerInterrupt_t interrupt, bool enabled) {
     int8_t flag = -1;
 
     volatile uint8_t *value = _TIMSKn.value;
@@ -47,7 +47,7 @@ void HWTimerClass::setInterruptEnabled(HWTimerInterrupt interrupt, bool enabled)
 
 HWTimer8Bit::HWTimer8Bit() = default;
 
-void HWTimer8Bit::setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)()) {
+void HWTimer8Bit::setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)()) {
     switch (interrupt) {
         case HW_TIMER_INTERRUPT_OVERFLOW:
             _onOverflow = handler;
@@ -100,8 +100,8 @@ HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
 }
 
 #if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
-void HWTimer0Class::setClockSource(HWTimer0ClockSource clockSource) {
-    HWTimerClass::setClockSource((HWTimerClockSource) ((uint8_t) clockSource));
+void HWTimer0Class::setClockSource(HWTimer0ClockSource_t clockSource) {
+    HWTimerClass::setClockSource((HWTimerClockSource_t) ((uint8_t) clockSource));
 }
 #endif
 
@@ -173,8 +173,8 @@ HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
 
 #if defined (__AVR_ATmega128__) || defined (__AVR_ATmega64__)
 #else
-void HWTimer2Class::setClockSource(HWTimer2ClockSource clockSource) {
-    HWTimerClass::setClockSource((HWTimerClockSource) ((uint8_t) clockSource));
+void HWTimer2Class::setClockSource(HWTimer2ClockSource_t clockSource) {
+    HWTimerClass::setClockSource((HWTimerClockSource_t) ((uint8_t) clockSource));
 }
 #endif
 
@@ -211,7 +211,7 @@ ISR(TIMER2_OVF_vect)
 
 HWTimer16Bit::HWTimer16Bit() = default;
 
-void HWTimer16Bit::setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)()) {
+void HWTimer16Bit::setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)()) {
     switch (interrupt) {
         case HW_TIMER_INTERRUPT_OVERFLOW:
             _onOverflow = handler;
