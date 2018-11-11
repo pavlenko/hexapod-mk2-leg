@@ -1,5 +1,8 @@
 #include "ServoMotor.h"
 
+// Dependency on Timer lib
+#include <Timer.h>
+
 #include <util/atomic.h>
 #include <stdint.h>
 
@@ -30,12 +33,52 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+//TODO use this handler instead of class method
+//TODO add internal enable/disable timer interrupt/handler
+//TODO bind timer handler only there for avoid errors in main config
+static inline void onTimerCompareA(ServomotorTimer timerN, Timer16Bit *timer) {
+    uint8_t index;
+
+    if (channels[timerN] < 0) {
+        *timer->TCNTn = 0;
+    } else {
+        index = (timerN * SERVOMOTOR_PER_TIMER) + channels[timerN];
+
+        if (index < count && servos[index].pin.attached) {
+            *(servos[index].port) &= ~_BV(servos[index].pin.number);
+        }
+    }
+
+    channels[timerN]++;
+
+    index = (timerN * SERVOMOTOR_PER_TIMER) + channels[timerN];
+
+    if (index < count && channels[timerN] < SERVOMOTOR_PER_TIMER) {
+        *timer->OCRnA = *timer->TCNTn + servos[index].ticks;
+
+        if (servos[index].pin.attached) {
+            *(servos[index].port) |= _BV(servos[index].pin.number);
+        }
+    } else {
+        if (*timer->TCNTn + 4 < US_TO_TICKS(REFRESH_US)) {
+            *timer->OCRnA = (uint16_t) US_TO_TICKS(REFRESH_US);
+        } else {
+            *timer->OCRnA = *timer->TCNTn + 4;
+        }
+
+        channels[timerN] = -1;
+    }
+}
+
 uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin) {
     return this->attach(port, pin, SERVOMOTOR_PULSE_MIN, SERVOMOTOR_PULSE_MAX);
 }
 
 uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
     if (count < SERVOMOTOR_TOTAL) {
+        /*if(isTimerActive(timer) == false)
+            initISR(timer);*/
+
         servos[count].port = port;
 
         servos[count].pin.number   = pin;
@@ -53,6 +96,10 @@ uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t mi
 void ServoMotorClass::detach(uint8_t index) {
     if (index < count) {
         servos[index].pin.attached = 0;
+
+        /*if(isTimerActive(timer) == false) {
+            finISR(timer);
+        }*/
     }
 }
 
