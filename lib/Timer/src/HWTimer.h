@@ -151,15 +151,15 @@ public:
 class HWTimer8Bit: public HWTimerClass {
 protected:
     uint8_t _channelCount;
-    // Value registers
-    volatile uint8_t *_TCNTn;
-    volatile uint8_t *_OCRnA;
-    volatile uint8_t *_OCRnB;
     // User function pointers
     void (*_onOverflow)();
     void (*_onCompareMatchA)();
     void (*_onCompareMatchB)();
 public:
+    // Value registers
+    volatile uint8_t *TCNTn;
+    volatile uint8_t *OCRnA;
+    volatile uint8_t *OCRnB;
     HWTimer8Bit();
     void setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)());
 };
@@ -204,11 +204,6 @@ extern HWTimer2Class HWTimer2;
 class HWTimer16Bit: public HWTimerClass {
 protected:
     uint8_t _channelCount;
-    // Value registers
-    volatile uint16_t *_TCNTn;
-    volatile uint16_t *_OCRnA;
-    volatile uint16_t *_OCRnB;
-    volatile uint16_t *_OCRnC;
     // User function pointers
     void (*_onOverflow)();
     void (*_onCompareMatchA)();
@@ -216,6 +211,11 @@ protected:
     void (*_onCompareMatchC)();
     void (*_onCaptureInput)();
 public:
+    // Value registers
+    volatile uint16_t *TCNTn;
+    volatile uint16_t *OCRnA;
+    volatile uint16_t *OCRnB;
+    volatile uint16_t *OCRnC;
     HWTimer16Bit();
     void setInterruptHandler(HWTimerInterrupt interrupt, void (*handler)());
 };

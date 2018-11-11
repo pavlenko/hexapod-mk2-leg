@@ -59,16 +59,13 @@ void HWTimer8Bit::setInterruptHandler(HWTimerInterrupt interrupt, void (*handler
             _onCompareMatchB = handler;
             break;
         case HW_TIMER_INTERRUPT_COMPARE_MATCH_C:
-            flag = _TIMSKn.OCIEnC;
-            break;
         case HW_TIMER_INTERRUPT_CAPTURE_INPUT:
-            flag = _TIMSKn.ICIEn;
             break;
     }
 }
 
 HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
-    _TCNTn = &TCNT0;
+    TCNTn = &TCNT0;
 #if defined (TIMSK)
     _TIMSKn = {
         .value  = &TIMSK,
@@ -81,8 +78,8 @@ HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
 
     _TCCRnA = &TCCR0;
     _TCCRnB = &TCCR0;
-    _OCRnA  = &OCR0;
-    _OCRnB  = NULL;
+    OCRnA   = &OCR0;
+    OCRnB   = NULL;
     _channelCount = 1;
 #else
     _TIMSKn = {
@@ -96,8 +93,8 @@ HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
 
     _TCCRnA = &TCCR0A;
     _TCCRnB = &TCCR0B;
-    _OCRnA  = &OCR0A;
-    _OCRnB  = &OCR0B;
+    OCRnA   = &OCR0A;
+    OCRnB   = &OCR0B;
     _channelCount = 2;
 #endif
 }
@@ -140,7 +137,7 @@ ISR(TIMER0_OVF_vect)
 
 #if HW_TIMER_8BIT_COUNT == 2
 HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
-    _TCNTn = &TCNT2;
+    TCNTn = &TCNT2;
 #if defined (TIMSK)
     _TIMSKn = {
         .value  = &TIMSK,
@@ -153,8 +150,8 @@ HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
 
     _TCCRnA = &TCCR2;
     _TCCRnB = &TCCR2;
-    _OCRnA  = &OCR2;
-    _OCRnA  = NULL;
+    OCRnA   = &OCR2;
+    OCRnB   = NULL;
     _channelCount = 1;
 #else
     _TIMSKn = {
@@ -168,8 +165,8 @@ HWTimer2Class::HWTimer2Class() : HWTimer8Bit() {
 
     _TCCRnA = &TCCR2A;
     _TCCRnB = &TCCR2B;
-    _OCRnA  = &OCR2A;
-    _OCRnB  = &OCR2B;
+    OCRnA   = &OCR2A;
+    OCRnB   = &OCR2B;
     _channelCount = 2;
 #endif
 }
@@ -261,14 +258,14 @@ HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {
 
     _TCCRnA = &TCCR1A;
     _TCCRnB = &TCCR1B;
-    _TCNTn  = &TCNT1;
-    _OCRnA  = &OCR1A;
-    _OCRnB  = &OCR1B;
+    TCNTn   = &TCNT1;
+    OCRnA   = &OCR1A;
+    OCRnB   = &OCR1B;
 #if defined (OCR1C)
-    _OCRnC  = &OCR1C;
+    OCRnC   = &OCR1C;
     _channelCount = 3;
 #else
-    _OCRnC  = NULL;
+    OCRnC   = NULL;
     _channelCount = 2;
 #endif
 }
@@ -332,14 +329,14 @@ HWTimer3Class::HWTimer3Class(): HWTimer16Bit() {
 
     _TCCRnA = &TCCR3A;
     _TCCRnB = &TCCR3B;
-    _TCNTn  = &TCNT3;
-    _OCRnA  = &OCR3A;
-    _OCRnB  = &OCR3B;
+    TCNTn   = &TCNT3;
+    OCRnA   = &OCR3A;
+    OCRnB   = &OCR3B;
 #if defined (OCR3C)
-    _OCRnC  = &OCR3C;
+    OCRnC   = &OCR3C;
     _channelCount = 3;
 #else
-    _OCRnC  = NULL;
+    OCRnC   = NULL;
     _channelCount = 2;
 #endif
 }
@@ -391,10 +388,10 @@ HWTimer4Class::HWTimer4Class(): HWTimer16Bit() {
 
     _TCCRnA = &TCCR4A;
     _TCCRnB = &TCCR4B;
-    _TCNTn  = &TCNT4;
-    _OCRnA  = &OCR4A;
-    _OCRnB  = &OCR4B;
-    _OCRnC  = &OCR4C;
+    TCNTn   = &TCNT4;
+    OCRnA   = &OCR4A;
+    OCRnB   = &OCR4B;
+    OCRnC   = &OCR4C;
     _channelCount = 3;
 }
 
@@ -443,10 +440,10 @@ HWTimer5Class::HWTimer5Class(): HWTimer16Bit() {
 
     _TCCRnA = &TCCR5A;
     _TCCRnB = &TCCR5B;
-    _TCNTn  = &TCNT5;
-    _OCRnA  = &OCR5A;
-    _OCRnB  = &OCR5B;
-    _OCRnC  = &OCR5C;
+    TCNTn   = &TCNT5;
+    OCRnA   = &OCR5A;
+    OCRnB   = &OCR5B;
+    OCRnC   = &OCR5C;
     _channelCount = 3;
 }
 

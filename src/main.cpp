@@ -5,7 +5,8 @@
 
 #include <ES.h>
 #include <ServoMotor.h>
-#include <Timer.h>
+#include <HWTimer.h>
+//#include <Timer.h>
 #include <TWI.h>
 
 #include <avr/interrupt.h>
@@ -36,10 +37,12 @@ int main()
 
     TWI.setOnRequestHandler(twiOnRequest);
 
-    Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+    *HWTimer0.TCNTn = 5;
+
+    /*Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer1.setInterruptHandler(TIMER1_ISR_OUTPUT_COMPARE_A, [](){
         ServoMotor.update(SERVOMOTOR_TIMER1, &TCNT1, &OCR1A);
-    });
+    });*/
 
     sei();
 
