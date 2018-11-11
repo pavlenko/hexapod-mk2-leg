@@ -76,6 +76,20 @@ void HWTimer8Bit::setCountMode(uint8_t mode) {
 #endif
 }
 
+void HWTimer8Bit::setOutputModeA(uint8_t mode) {
+#if defined (TIMSK)
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+#else
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | ((mode & 0b00000011) << 6));
+#endif
+}
+
+void HWTimer8Bit::setOutputModeB(uint8_t mode) {
+#if defined(TIMSK0)
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+#endif
+}
+
 HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
     TCNTn = &TCNT0;
 #if defined (TIMSK)
@@ -248,6 +262,18 @@ void HWTimer16Bit::setCountMode(uint8_t mode) {
     // WGMn1 and WGNn0 are in positions 1 and 0, respectively, in TCCRnA
     *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11111100) | (mode & 0b00000011));
     *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11100111) | ((mode & 0b00001100) << 1));
+}
+
+void HWTimer16Bit::setOutputModeA(uint8_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b00111111) | ((mode & 0b00000011) << 6));
+}
+
+void HWTimer16Bit::setOutputModeB(uint8_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11001111) | ((mode & 0b00000011) << 4));
+}
+
+void HWTimer16Bit::setOutputModeC(uint8_t mode) {
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11110011) | ((mode & 0b00000011) << 2));
 }
 
 HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {
