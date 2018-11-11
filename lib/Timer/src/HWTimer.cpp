@@ -64,6 +64,18 @@ void HWTimer8Bit::setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handl
     }
 }
 
+void HWTimer8Bit::setCountMode(uint8_t mode) {
+    // For devices with global TIMSK, 8 bit timers have:
+    // WGMn0 in position 6 of TCCRn register
+    // WGMn1 in position 3 of TCCRn register
+#if defined (TIMSK)
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b10110111) | ((mode & 0b00000001) << 6) | ((mode & 0b00000010) << 2));
+#else
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11111100) | (mode & 0b00000011));
+    *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11100111) | ((mode & 0b00001100) << 1));
+#endif
+}
+
 HWTimer0Class::HWTimer0Class() : HWTimer8Bit() {
     TCNTn = &TCNT0;
 #if defined (TIMSK)
@@ -229,6 +241,13 @@ void HWTimer16Bit::setInterruptHandler(HWTimerInterrupt_t interrupt, void (*hand
             _onCaptureInput = handler;
             break;
     }
+}
+
+void HWTimer16Bit::setCountMode(uint8_t mode) {
+    // WGMn3 and WGMn2 are in positions 4 and 3, respectively, in TCCRnB
+    // WGMn1 and WGNn0 are in positions 1 and 0, respectively, in TCCRnA
+    *_TCCRnA = (uint8_t) ((*_TCCRnA & 0b11111100) | (mode & 0b00000011));
+    *_TCCRnB = (uint8_t) ((*_TCCRnB & 0b11100111) | ((mode & 0b00001100) << 1));
 }
 
 HWTimer1Class::HWTimer1Class(): HWTimer16Bit() {

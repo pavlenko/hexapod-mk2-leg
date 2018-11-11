@@ -162,6 +162,9 @@ public:
     volatile uint8_t *OCRnB;
     HWTimer8Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
+    void setCountMode(uint8_t mode);
+    void setOutputModeA(uint8_t mode);
+    void setOutputModeB(uint8_t mode);
 };
 
 class HWTimer0Class: public HWTimer8Bit {
@@ -218,6 +221,10 @@ public:
     volatile uint16_t *OCRnC;
     HWTimer16Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
+    void setCountMode(uint8_t mode);
+    void setOutputModeA(uint8_t mode);
+    void setOutputModeB(uint8_t mode);
+    void setOutputModeC(uint8_t mode);
 };
 
 class HWTimer1Class: public HWTimer16Bit {
