@@ -130,12 +130,14 @@ typedef enum {
 typedef enum {
     HW_TIMER_8BIT_COUNT_NORMAL,
     HW_TIMER_8BIT_COUNT_PWM_PHASE_CORRECT,
-    HW_TIMER_8BIT_COUNT_CTC,
-    HW_TIMER_8BIT_COUNT_FAST_PWM,
-    HW_TIMER_8BIT_COUNT_RESERVED_1,
-    HW_TIMER_8BIT_COUNT_PWM_PHASE_CORRECT_BY_OCR,
-    HW_TIMER_8BIT_COUNT_RESERVED_2,
-    HW_TIMER_8BIT_COUNT_FAST_PWM_BY_OCR
+    HW_TIMER_8BIT_COUNT_CTC_BY_OCR,
+    HW_TIMER_8BIT_COUNT_FAST_PWM
+#if defined(TIMSK)
+    ,HW_TIMER_8BIT_COUNT_RESERVED_1
+    ,HW_TIMER_8BIT_COUNT_PWM_PHASE_CORRECT_BY_OCR
+    ,HW_TIMER_8BIT_COUNT_RESERVED_2
+    ,HW_TIMER_8BIT_COUNT_FAST_PWM_BY_OCR
+#endif
 } HWTimer8BitCountMode_t;
 
 typedef enum {
@@ -199,7 +201,7 @@ public:
     volatile uint8_t *OCRnB;
     HWTimer8Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
-    void setCountMode(uint8_t mode);
+    void setCountMode(HWTimer8BitCountMode_t mode);
     inline void setOutputModeA(HWTimerOutputMode_t mode);
     inline void setOutputModeB(HWTimerOutputMode_t mode);
 };
@@ -258,7 +260,7 @@ public:
     volatile uint16_t *OCRnC;
     HWTimer16Bit();
     void setInterruptHandler(HWTimerInterrupt_t interrupt, void (*handler)());
-    void setCountMode(uint8_t mode);
+    void setCountMode(HWTimer16BitCountMode_t mode);
     inline void setOutputModeA(HWTimerOutputMode_t mode);
     inline void setOutputModeB(HWTimerOutputMode_t mode);
     inline void setOutputModeC(HWTimerOutputMode_t mode);
