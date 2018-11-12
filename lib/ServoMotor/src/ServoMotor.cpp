@@ -35,7 +35,7 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 
 //TODO use this handler instead of class method
 //TODO add internal enable/disable timer interrupt/handler
-//TODO bind timer handler only there for avoid errors in main config
+//TODO -- maybe use map of timer obj address -> channel index, and pass timer instance to handler
 static inline void onTimerCompareA(ServomotorTimer timerN, Timer16Bit *timer) {
     uint8_t index;
 
@@ -70,22 +70,50 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16Bit *timer) {
     }
 }
 
+#ifdef TCNT1
+static inline void onTimer1CompareA() { onTimerCompareA(SERVOMOTOR_TIMER1, &Timer1); }
+#endif
+
+#ifdef TCNT3
+static inline void onTimer3CompareA() { onTimerCompareA(SERVOMOTOR_TIMER3, &Timer3); }
+#endif
+
+#ifdef TCNT4
+static inline void onTimer4CompareA() { onTimerCompareA(SERVOMOTOR_TIMER4, &Timer4); }
+#endif
+
+#ifdef TCNT5
+static inline void onTimer5CompareA() { onTimerCompareA(SERVOMOTOR_TIMER5, &Timer5); }
+#endif
+
+ServoMotorClass::ServoMotorClass() {
+#ifdef TCNT1
+    Timer1.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer1CompareA);
+#endif
+#ifdef TCNT3
+    Timer3.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer3CompareA);
+#endif
+#ifdef TCNT4
+    Timer4.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer4CompareA);
+#endif
+#ifdef TCNT5
+    Timer5.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer5CompareA);
+#endif
+}
+
 uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin) {
     return this->attach(port, pin, SERVOMOTOR_PULSE_MIN, SERVOMOTOR_PULSE_MAX);
 }
 
 uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
     if (count < SERVOMOTOR_TOTAL) {
-        /*if(isTimerActive(timer) == false)
-            initISR(timer);*/
+        servos[count].min = min;
+        servos[count].max = max;
 
         servos[count].port = port;
 
         servos[count].pin.number   = pin;
         servos[count].pin.attached = 1;
-
-        servos[count].min = min;
-        servos[count].max = max;
 
         return count++;
     }
@@ -96,10 +124,6 @@ uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t mi
 void ServoMotorClass::detach(uint8_t index) {
     if (index < count) {
         servos[index].pin.attached = 0;
-
-        /*if(isTimerActive(timer) == false) {
-            finISR(timer);
-        }*/
     }
 }
 
@@ -160,40 +184,6 @@ void ServoMotorClass::setMicroseconds(uint8_t index, uint16_t value) {
         ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
             servos[index].ticks = ticks;
         }
-    }
-}
-
-void ServoMotorClass::update(ServomotorTimer timer, volatile uint16_t *TCNTn, volatile uint16_t *OCRnA) {
-    uint8_t index;
-
-    if (channels[timer] < 0) {
-        *TCNTn = 0;
-    } else {
-        index = (timer * SERVOMOTOR_PER_TIMER) + channels[timer];
-
-        if (index < count && servos[index].pin.attached) {
-            *(servos[index].port) &= ~_BV(servos[index].pin.number);
-        }
-    }
-
-    channels[timer]++;
-
-    index = (timer * SERVOMOTOR_PER_TIMER) + channels[timer];
-
-    if (index < count && channels[timer] < SERVOMOTOR_PER_TIMER) {
-        *OCRnA = *TCNTn + servos[index].ticks;
-
-        if (servos[index].pin.attached) {
-            *(servos[index].port) |= _BV(servos[index].pin.number);
-        }
-    } else {
-        if (*TCNTn + 4 < US_TO_TICKS(REFRESH_US)) {
-            *OCRnA = (uint16_t) US_TO_TICKS(REFRESH_US);
-        } else {
-            *OCRnA = *TCNTn + 4;
-        }
-
-        channels[timer] = -1;
     }
 }
 
