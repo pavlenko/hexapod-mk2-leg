@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
 #include <avr/eeprom.h>
+#include <util/atomic.h>
 #include <stdint.h>
 
 //TODO write buffer item: [address, byte] or maybe [address, length, byte, byte, ...]
@@ -20,11 +21,12 @@ static volatile uint8_t writeBufferLength;
 
 EEPROMClass EEPROM;
 
-ISR(EE_RDY_vect){
-    //TODO write eeprom value to buffer byte by byte, use our own ready flag for check is ready to read/write
-}
+ISR(EE_RDY_vect){}
 
 void EEPROMClass::read(uint16_t address, uint8_t *value) {
+    // Wait until previous write completed
+    while(EECR & _BV(EEWE));
+
     EEAR  = address;
     EECR |= _BV(EERE);
 
@@ -85,7 +87,13 @@ void EEPROMClass::start() {
 }
 
 void EEPROMClass::flush() {
-    //TODO start write buffer
+    if (writeBufferLength > 0) {
+        EEAR = writeBufferData[writeBufferIndex].address;
+        EEDR = writeBufferData[writeBufferIndex].data[0];
+
+        EECR |= _BV(EEMWE); //<-- EEMWE must be set separately before set EEWE
+        EECR |= _BV(EEWE);
+    }
 }
 
 void EEPROMClass::setOnWriteCompleteHandler(void (*handler_ptr)()) {
