@@ -12,16 +12,36 @@ class EEPROMClass
 private:
     void (*_onWriteCompleteHandler) ();
 public:
-    //TODO rewrite methods to use simple uint16_t address instead of pointers to emem
-    uint8_t read(const uint8_t *__p);
+    /**
+     * @param address
+     * @param value
+     */
+    void read(uint16_t address, uint8_t *value);
 
-    uint16_t read(const uint16_t *__p);
+    /**
+     * @param address
+     * @param value
+     */
+    void read(uint16_t address, uint16_t *value);
 
-    uint32_t read(const uint32_t *__p);
+    /**
+     * @param address
+     * @param value
+     */
+    void read(uint16_t address, uint32_t *value);
 
-    float read(const float *__p);
+    /**
+     * @param address
+     * @param value
+     */
+    void read(uint16_t address, float *value);
 
-    void read(void *__dst, const void *__src, uint8_t __n);
+    /**
+     * @param address
+     * @param data
+     * @param length
+     */
+    void read(uint16_t address, uint8_t *data, uint8_t length);
 
     void write(uint8_t *__p, uint8_t __value);
 
