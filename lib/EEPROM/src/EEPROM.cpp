@@ -22,3 +22,13 @@ ISR(EE_RDY_vect){
     //TODO write eeprom value to buffer byte by byte, use our own ready flag for check is ready to read/write
 }
 
+uint8_t EEPROMClass::read(const uint8_t *__p) {
+    EEAR  = (uint16_t) *(volatile uint8_t*) __p;
+    EECR |= _BV(EERE);
+
+    return EEDR;
+}
+
+void EEPROMClass::setOnWriteCompleteHandler(void (*handler_ptr)()) {
+    _onWriteCompleteHandler = handler_ptr;
+}

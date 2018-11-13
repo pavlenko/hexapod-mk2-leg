@@ -3,6 +3,7 @@
 #define SERVOMOTOR_USE_TIMER4 1
 #define SERVOMOTOR_USE_TIMER5 1
 
+#include <EEPROM.h>
 #include <ES.h>
 #include <ServoMotor.h>
 #include <Timer.h>
@@ -27,6 +28,8 @@ static volatile uint8_t mode;
 #define COMMAND_CALIBRATE_ON  0x20
 //TODO calibrate related command
 #define COMMAND_CALIBRATE_OFF 0x2F
+
+static EEMEM uint8_t value1_ptr;
 
 volatile uint8_t timer;
 
@@ -65,8 +68,12 @@ void twiOnRequest() {
 
 int main()
 {
+    uint8_t value = EEPROM.read(&value1_ptr);
+
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
+
+    PORTB = value;
 
     TWI.setOnReceiveHandler(twiOnReceive);
     TWI.setOnRequestHandler(twiOnRequest);
