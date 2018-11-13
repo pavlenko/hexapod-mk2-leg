@@ -11,6 +11,19 @@ class EEPROMClass
 {
 private:
     void (*_onWriteCompleteHandler) ();
+    /**
+     * @param address
+     * @param data
+     * @param length
+     */
+    void read(uint16_t address, uint8_t *data, uint8_t length);
+
+    /**
+     * @param address
+     * @param data
+     * @param length
+     */
+    void write(uint16_t address, uint8_t *data, uint8_t length);
 public:
     /**
      * @param address
@@ -38,21 +51,36 @@ public:
 
     /**
      * @param address
-     * @param data
-     * @param length
+     * @param value
      */
-    void read(uint16_t address, uint8_t *data, uint8_t length);
+    void write(uint16_t address, uint8_t *value);
 
-    void write(uint8_t *__p, uint8_t __value);
+    /**
+     * @param address
+     * @param value
+     */
+    void write(uint16_t address, uint16_t *value);
 
-    void write(uint16_t *__p, uint16_t __value);
+    /**
+     * @param address
+     * @param value
+     */
+    void write(uint16_t address, uint32_t *value);
 
-    void write(uint32_t *__p, uint32_t __value);
+    /**
+     * @param address
+     * @param value
+     */
+    void write(uint16_t address, float *value);
 
-    void write(float *__p, float __value);
+    /**
+     * Reset write buffer before write
+     */
+    void start();
 
-    void write(const void *__src, void *__dst, uint8_t __n);
-
+    /**
+     * Write buffer to EEPROM
+     */
     void flush();
 
     /**
