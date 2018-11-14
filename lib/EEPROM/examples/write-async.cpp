@@ -28,6 +28,7 @@ int main() {
     float value4 = 4;
     EEPROM.write(EEPROM_FLOAT_ADDR, &value4);
 
+    EEPROM.setOnWriteCompleteHandler(onWriteCompleted);
     EEPROM.flush();// Write buffer to EEPROM in background
 }
 
