@@ -19,19 +19,6 @@ class EEPROMClass
     friend void EE_RDY_vect();
 private:
     void (*_onWriteCompleteHandler) ();
-    /**
-     * @param address
-     * @param data
-     * @param length
-     */
-    void read(uint16_t address, uint8_t *data, uint8_t length);//TODO maybe move outside of class
-
-    /**
-     * @param address
-     * @param data
-     * @param length
-     */
-    void write(uint16_t address, uint8_t *data, uint8_t length);//TODO maybe move outside of class
 public:
     /**
      * @param address
