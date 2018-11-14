@@ -99,10 +99,7 @@ void TWIClass::read(uint8_t *data, uint8_t length) {
 
 void TWIClass::write(uint8_t value) {
     if (txBufferLength < TWI_BUFFER_LENGTH) {
-        txBufferData[txBufferIndex] = value;
-
-        txBufferIndex++;
-        txBufferLength++;
+        txBufferData[txBufferLength++] = value;
     } else {
         error = TWI_ERROR_WRITE;
     }
