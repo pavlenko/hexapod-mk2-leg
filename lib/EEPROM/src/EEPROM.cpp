@@ -34,37 +34,37 @@ void EEPROMClass::read(uint16_t address, uint8_t *value) {
 }
 
 void EEPROMClass::read(uint16_t address, uint16_t *value) {
-    this->read(address, (uint8_t *) &value, 2);
+    this->read(address, (uint8_t *) value, 2);
 }
 
 void EEPROMClass::read(uint16_t address, uint32_t *value) {
-    this->read(address, (uint8_t *) &value, 4);
+    this->read(address, (uint8_t *) value, 4);
 }
 
 void EEPROMClass::read(uint16_t address, float *value) {
-    this->read(address, (uint8_t *) &value, 4);
+    this->read(address, (uint8_t *) value, 4);
 }
 
 void EEPROMClass::read(uint16_t address, uint8_t *data, uint8_t length) {
     for (uint8_t i = 0; i < length; i++) {
-        this->read(address, &data[i]);
+        this->read(address, data + i);
     }
 }
 
 void EEPROMClass::write(uint16_t address, uint8_t *value) {
-    this->write(address, (uint8_t *) &value, 1);
+    this->write(address, (uint8_t *) value, 1);
 }
 
 void EEPROMClass::write(uint16_t address, uint16_t *value) {
-    this->write(address, (uint8_t *) &value, 2);
+    this->write(address, (uint8_t *) value, 2);
 }
 
 void EEPROMClass::write(uint16_t address, uint32_t *value) {
-    this->write(address, (uint8_t *) &value, 4);
+    this->write(address, (uint8_t *) value, 4);
 }
 
 void EEPROMClass::write(uint16_t address, float *value) {
-    this->write(address, (uint8_t *) &value, 4);
+    this->write(address, (uint8_t *) value, 4);
 }
 
 void EEPROMClass::write(uint16_t address, uint8_t *data, uint8_t length) {
