@@ -5,6 +5,7 @@
 
 #include <EEPROM.h>
 #include <ES.h>
+#include <FSM.h>
 #include <ServoMotor.h>
 #include <Timer.h>
 #include <TWI.h>
@@ -28,6 +29,10 @@ static volatile uint8_t mode;
 #define COMMAND_CALIBRATE_ON  0x20
 //TODO calibrate related command
 #define COMMAND_CALIBRATE_OFF 0x2F
+
+static FSMTransition fsm[] = {
+    {.stateIN = 0, .stateOUT = 0}
+};
 
 volatile uint8_t timer;
 
@@ -71,7 +76,7 @@ int main() {
     TWI.setOnRequestHandler(twiOnRequest);
 
     // Initialize finite state machine
-    FSM.initialize(fsm, APP_STATE_IDLE);
+    FSM.initialize(fsm, 0);
 
     //TODO Read calibration values from EEPROM
     //TODO Read last values from EEPROM
