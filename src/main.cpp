@@ -29,8 +29,6 @@ static volatile uint8_t mode;
 //TODO calibrate related command
 #define COMMAND_CALIBRATE_OFF 0x2F
 
-static EEMEM uint8_t value1_ptr;
-
 volatile uint8_t timer;
 
 void onTimer5CompareA() {
@@ -68,7 +66,8 @@ void twiOnRequest() {
 
 int main()
 {
-    uint8_t value = EEPROM.read(&value1_ptr);
+    uint8_t value;
+    EEPROM.read(0, &value);
 
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
