@@ -4,10 +4,6 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 
-#ifndef EEMEM
-#define EEMEM __attribute__((section(".eeprom")))
-#endif
-
 #ifndef EEPROM_WRITE_BUFFER_LENGTH
 #define EEPROM_WRITE_BUFFER_LENGTH 8
 #endif

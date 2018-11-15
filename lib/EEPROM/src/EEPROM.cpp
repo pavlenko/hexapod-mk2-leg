@@ -31,7 +31,7 @@ static inline void writeFrame(EEPROMWriteFrame_t *frame) {
 }
 
 static inline void _read(uint16_t address, uint8_t *data, uint8_t length) {
-    while(writeBufferLength > 0 && (EECR & ~_BV(EEWE)));
+    while (writeBufferLength > 0 && (EECR & _BV(EEWE)));
 
     for (uint8_t i = 0; i < length; i++) {
         EEAR  = address++;
@@ -44,7 +44,7 @@ static inline void _read(uint16_t address, uint8_t *data, uint8_t length) {
 static inline void _write(uint16_t address, uint8_t *data, uint8_t length) {
     if (async) {
         for (uint8_t i = 0; i < length; i++) {
-            while(EECR & ~_BV(EEWE));
+            while (EECR & _BV(EEWE));
 
             EEAR = address++;
             EEDR = *(data + i);
