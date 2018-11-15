@@ -64,8 +64,19 @@ void twiOnRequest() {
     //TODO handle commands from TWI module
 }
 
-int main()
-{
+int main() {
+    // Initialize TWI
+    TWI.setAddress(0x01);
+    TWI.setOnReceiveHandler(twiOnReceive);
+    TWI.setOnRequestHandler(twiOnRequest);
+
+    // Initialize finite state machine
+    FSM.initialize(fsm, APP_STATE_IDLE);
+
+    //TODO Read calibration values from EEPROM
+    //TODO Read last values from EEPROM
+    //TODO Initialize servos
+
     uint8_t value;
     EEPROM.read(0, &value);
 
@@ -73,9 +84,6 @@ int main()
     PORTA &= ~_BV(PA0);
 
     PORTB = value;
-
-    TWI.setOnReceiveHandler(twiOnReceive);
-    TWI.setOnRequestHandler(twiOnRequest);
 
     *Timer0.TCNTn = 5;
 
