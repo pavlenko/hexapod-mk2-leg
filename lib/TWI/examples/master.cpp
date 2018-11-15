@@ -39,16 +39,16 @@ int main() {
     TWI.start();
 
     uint8_t value1 = 0;
-    TWI.write(value1);// Write byte to TX buffer
+    TWI.write(&value1);// Write byte to TX buffer
 
     uint16_t value2 = 0;
-    TWI.write(value2);// Write word to TX buffer
+    TWI.write(&value2);// Write word to TX buffer
 
     uint32_t value3 = 0;
-    TWI.write(value3);// Write dword to TX buffer
+    TWI.write(&value3);// Write dword to TX buffer
 
     float value4 = 0;
-    TWI.write(value4);// Write float to TX buffer
+    TWI.write(&value4);// Write float to TX buffer
 
     uint8_t values[4];
     TWI.write(values, 4);// Write 4 bytes array to TX buffer

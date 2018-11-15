@@ -111,6 +111,7 @@ public:
      * Read array from TX buffer to pointer
      *
      * @param value
+     * @param length
      */
     void read(uint8_t *data, uint8_t length);
 
@@ -119,28 +120,28 @@ public:
      *
      * @param value
      */
-    void write(uint8_t value);
+    void write(uint8_t *value);
 
     /**
      * Write value to TX buffer
      *
      * @param value
      */
-    void write(uint16_t value);
+    void write(uint16_t *value);
 
     /**
      * Write value to TX buffer
      *
      * @param value
      */
-    void write(uint32_t value);
+    void write(uint32_t *value);
 
     /**
      * Write value to TX buffer
      *
      * @param value
      */
-    void write(float value);
+    void write(float *value);
 
     /**
      * Write values array to TX buffer
@@ -159,6 +160,15 @@ public:
     void receive(uint8_t address, uint8_t length);
 
     /**
+     * Receive data from slave
+     *
+     * @param address
+     * @param length
+     * @param stop
+     */
+    void receive(uint8_t address, uint8_t length, bool stop);
+
+    /**
      * Prepare transmitting
      */
     void start();
@@ -169,6 +179,14 @@ public:
      * @param address
      */
     void transmit(uint8_t address);
+
+    /**
+     * Transmit data to slave
+     *
+     * @param address
+     * @param stop
+     */
+    void transmit(uint8_t address, bool stop);
 
     /**
      * Set handler for master transmit data completed event

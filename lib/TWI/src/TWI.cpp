@@ -12,8 +12,8 @@
 static volatile uint8_t state;
 static volatile uint8_t error;
 static volatile uint8_t addressAndRW;
-static volatile uint8_t isRepeatedStart;
-static volatile uint8_t sendStop;
+static volatile bool    isRepeatedStart;
+static volatile bool    sendStop;
 
 static void (*onTransmitHandler) ();
 static void (*onReceiveHandler) ();
@@ -28,11 +28,9 @@ static volatile uint8_t rxBufferIndex;
 static volatile uint8_t rxBufferLength;
 
 void TWIClass::enable() {
-    state = TWI_STATE_READY;
-    sendStop = 1;
-    isRepeatedStart = 0;
-
-    //TODO activate internal pull-up resistors OR use external and don't bother about that
+    state           = TWI_STATE_READY;
+    sendStop        = true;
+    isRepeatedStart = false;
 
     // Set default prescaler value
     this->setPrescaler(TWI_PRESCALLER_NONE);
@@ -47,8 +45,6 @@ void TWIClass::enable() {
 void TWIClass::disable() {
     // Disable twi module, acks, and twi interrupt
     TWCR &= ~(_BV(TWEN) | _BV(TWIE) | _BV(TWEA));
-
-    //TODO de-activate internal pull-up resistors OR use external and don't bother about that
 }
 
 uint8_t TWIClass::getError() {
@@ -72,58 +68,61 @@ void TWIClass::setFrequency(uint32_t frequency) {
 }
 
 void TWIClass::read(uint8_t *value) {
-    if (rxBufferIndex < rxBufferLength) {
-        *value = rxBufferData[rxBufferIndex++];
-    } else {
-        error = TWI_ERROR_READ;
-    }
+    this->read(value, 1);
 }
 
 void TWIClass::read(uint16_t *value) {
-    this->read((uint8_t *) &value, 2);//TODO <-- check cast pointer is valid
+    this->read((uint8_t *) value, 2);
 }
 
 void TWIClass::read(uint32_t *value) {
-    this->read((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
+    this->read((uint8_t *) value, 4);
 }
 
 void TWIClass::read(float *value) {
-    this->read((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
+    this->read((uint8_t *) value, 4);
 }
 
 void TWIClass::read(uint8_t *data, uint8_t length) {
     for (uint8_t i = 0; i < length; i++) {
-        this->read(&data[i]);
+        if (rxBufferIndex < rxBufferLength) {
+            *(data + i) = rxBufferData[rxBufferIndex++];
+        } else {
+            error = TWI_ERROR_READ;
+        }
     }
 }
 
-void TWIClass::write(uint8_t value) {
-    if (txBufferLength < TWI_BUFFER_LENGTH) {
-        txBufferData[txBufferLength++] = value;
-    } else {
-        error = TWI_ERROR_WRITE;
-    }
+void TWIClass::write(uint8_t *value) {
+    this->write(value, 1);
 }
 
-void TWIClass::write(uint16_t value) {
-    this->write((uint8_t *) &value, 2);//TODO <-- check cast pointer is valid
+void TWIClass::write(uint16_t *value) {
+    this->write((uint8_t *) value, 2);
 }
 
-void TWIClass::write(uint32_t value) {
-    this->write((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
+void TWIClass::write(uint32_t *value) {
+    this->write((uint8_t *) value, 4);
 }
 
-void TWIClass::write(float value) {
-    this->write((uint8_t *) &value, 4);//TODO <-- check cast pointer is valid
+void TWIClass::write(float *value) {
+    this->write((uint8_t *) value, 4);
 }
 
 void TWIClass::write(uint8_t *data, uint8_t length) {
     for (uint8_t i = 0; i < length; i++) {
-        this->write(data[i]);
+        if (txBufferLength < TWI_BUFFER_LENGTH) {
+            txBufferData[txBufferLength++] = *(data + i);
+        } else {
+            error = TWI_ERROR_WRITE;
+        }
     }
 }
-
 void TWIClass::receive(uint8_t address, uint8_t length) {
+    this->receive(address, length, true);
+}
+
+void TWIClass::receive(uint8_t address, uint8_t length, bool stop) {
     if (TWI_BUFFER_LENGTH < length) {
         error = TWI_ERROR_OVERFLOW;
         return;
@@ -134,7 +133,7 @@ void TWIClass::receive(uint8_t address, uint8_t length) {
 
     state = TWI_STATE_MASTER_RX;
 
-    //TODO twi_sendStop = sendStop;
+    sendStop = stop;
 
     error = TWI_ERROR_NONE;
 
@@ -167,7 +166,7 @@ void TWIClass::receive(uint8_t address, uint8_t length) {
          *
          * Remember, we're dealing with an ASYNC ISR.
          */
-        isRepeatedStart = 0;
+        isRepeatedStart = false;
 
         do {
             TWDR = addressAndRW;
@@ -187,6 +186,10 @@ void TWIClass::start() {
 }
 
 void TWIClass::transmit(uint8_t address) {
+    this->transmit(address, true);
+}
+
+void TWIClass::transmit(uint8_t address, bool stop) {
     if (TWI_BUFFER_LENGTH < txBufferLength) {
         error = TWI_ERROR_OVERFLOW;
         return;
@@ -198,7 +201,7 @@ void TWIClass::transmit(uint8_t address) {
     state = TWI_STATE_MASTER_TX;
     error = TWI_ERROR_NONE;
 
-    //TODO twi_sendStop = sendStop;
+    sendStop = stop;
 
     addressAndRW = (uint8_t) ((address << 1) | TW_WRITE);
 
@@ -216,7 +219,7 @@ void TWIClass::transmit(uint8_t address) {
          *
          * Remember, we're dealing with an ASYNC ISR.
          */
-        isRepeatedStart = 0;
+        isRepeatedStart = false;
 
         do {
             TWDR = addressAndRW;
@@ -270,10 +273,10 @@ ISR(TWI_vect)
                     state = TWI_STATE_READY;
 
                     if (onTransmitHandler) {
-                        onTransmitHandler();//TODO check if valid
+                        onTransmitHandler();
                     }
                 } else {
-                    isRepeatedStart = 1;
+                    isRepeatedStart = true;
 
                     /**
                      * We're gonna send the START don't enable the interrupt.
@@ -324,10 +327,13 @@ ISR(TWI_vect)
                 state = TWI_STATE_READY;
 
                 if (onReceiveHandler) {
+                    rxBufferLength = 0;
+                    rxBufferIndex  = 0;
+
                     onReceiveHandler();
                 }
             } else {
-                isRepeatedStart = 1;
+                isRepeatedStart = true;
 
                 /**
                  * We're gonna send the START don't enable the interrupt.
@@ -374,10 +380,6 @@ ISR(TWI_vect)
             TWI_SEND_ACK();
             state = TWI_STATE_READY;
 
-            // put a null char after data if there's room
-            if (rxBufferIndex < TWI_BUFFER_LENGTH) {
-                rxBufferData[rxBufferIndex] = '\0';//TODO check if this is needed
-            }
             // callback to user defined callback
             if (onReceiveHandler) {
                 onReceiveHandler();
@@ -435,5 +437,6 @@ ISR(TWI_vect)
             TWI_SEND_STOP();
             state = TWI_STATE_READY;
             break;
+        default: break;
     }
 }
