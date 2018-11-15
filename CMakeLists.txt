@@ -8,7 +8,7 @@ include_directories("${CMAKE_CURRENT_LIST_DIR}/.piolibdeps/EEPROM/src")
 include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/ES/src")
 include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/ServoMotor/src")
 include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/Timer/src")
-include_directories("${CMAKE_CURRENT_LIST_DIR}/lib/TWI/src")
+include_directories("${CMAKE_CURRENT_LIST_DIR}/.piolibdeps/TWI/src")
 
 add_custom_target(
     PLATFORMIO_BUILD ALL
