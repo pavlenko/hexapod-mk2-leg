@@ -1,5 +1,7 @@
 #include "FSM.h"
 
+FSMState::FSMState() = default;
+
 FSMState::FSMState(void (*onEnter) ()) {
     this->onEnter = onEnter;
 }

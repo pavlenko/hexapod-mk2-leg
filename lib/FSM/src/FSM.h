@@ -19,6 +19,11 @@ private:
     void (*onExit) ();
 public:
     /**
+     * Default constructor
+     */
+    explicit FSMState();
+
+    /**
      * @param onEnter
      */
     explicit FSMState(void (*onEnter) ());
