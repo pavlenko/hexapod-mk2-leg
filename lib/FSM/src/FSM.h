@@ -3,16 +3,10 @@
 
 #include <stdint.h>
 
-//TODO are need state table as restriction to transition between states
-
-typedef struct {
-    uint8_t stateIN;
-    uint8_t stateOUT;
-    void (*stateExit) ();
-    void (*stateEnter) ();
-} FSMTransition;
+class FSMClass;
 
 class FSMState {
+    friend FSMClass;
 private:
     /**
      * Callback for enter state
@@ -34,38 +28,39 @@ public:
      * @param onExit
      */
     explicit FSMState(void (*onEnter) (), void (*onExit) ());
-
-    /**
-     * call onEnter
-     */
-    inline void enter();
-
-    /**
-     * Call onExit
-     */
-    inline void exit();
 };
 
 class FSMClass {
-    friend FSMState;
 private:
     FSMState *prevState;
     FSMState *nextState;
-    FSMTransition *_transitions;
-    uint8_t _state;
 public:
+    /**
+     * Init FSM without state
+     */
+    void initialize();
+
     /**
      * Init FSM with state
      *
      * @param state
      */
-    void initialize(FSMState *state);
+    void initialize(FSMState &state);
 
     /**
-     * @param transitions
      * @param state
      */
-    void initialize(FSMTransition *transitions, uint8_t state);
+    void transitionTo(FSMState &state);
+
+    /**
+     * @param state
+     * @param immediate
+     */
+    void transitionTo(FSMState &state, bool immediate);
+
+    /**
+     * Dispatch not immediate transitions
+     */
     void dispatch();
 };
 

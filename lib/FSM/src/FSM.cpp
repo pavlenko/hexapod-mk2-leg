@@ -9,35 +9,41 @@ FSMState::FSMState(void (*onEnter) (), void (*onExit) ()) {
     this->onExit  = onExit;
 }
 
-void FSMState::enter() {
-    if (this->onEnter) {
-        this->onEnter();
+void FSMClass::initialize() {
+    prevState = nullptr;
+}
+
+void FSMClass::initialize(FSMState &state) {
+    prevState = nextState = &state;
+
+    if (prevState->onEnter) {
+        prevState->onEnter();
     }
 }
 
-void FSMState::exit() {
-    if (this->onExit) {
-        this->onExit();
+void FSMClass::transitionTo(FSMState &state) {
+    nextState = &state;
+}
+
+void FSMClass::transitionTo(FSMState &state, bool immediate) {
+    nextState = &state;
+
+    if (immediate) {
+        this->dispatch();
     }
-}
-
-void FSMClass::initialize(FSMState *state) {
-    prevState = state;
-    nextState = state;
-}
-
-void FSMClass::initialize(FSMTransition *transitions, uint8_t state) {
-    _transitions = transitions;
-    _state       = state;
 }
 
 void FSMClass::dispatch() {
-    if (prevState) {
-        prevState->exit();
-    }
+    if (prevState != nextState) {
+        if (prevState && prevState->onExit) {
+            prevState->onExit();
+        }
 
-    if (nextState) {
-        nextState->enter();
+        prevState = nextState;
+
+        if (prevState->onEnter) {
+            prevState->onEnter();
+        }
     }
 }
 

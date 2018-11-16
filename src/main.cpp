@@ -30,10 +30,6 @@ static volatile uint8_t mode;
 //TODO calibrate related command
 #define COMMAND_CALIBRATE_OFF 0x2F
 
-static FSMTransition fsm[] = {
-    {.stateIN = 0, .stateOUT = 0}
-};
-
 volatile uint8_t timer;
 
 void onTimer5CompareA() {
@@ -76,7 +72,7 @@ int main() {
     TWI.setOnRequestHandler(twiOnRequest);
 
     // Initialize finite state machine
-    FSM.initialize(fsm, 0);
+    FSM.initialize();
 
     //TODO Read calibration values from EEPROM
     //TODO Read last values from EEPROM
