@@ -1,7 +1,7 @@
 #include "ServoMotor.h"
 
 // Dependency on Timer lib
-#include <Timer.h>
+#include <Timer16Bit.h>
 
 #include <util/atomic.h>
 #include <stdint.h>
@@ -36,7 +36,7 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 //TODO use this handler instead of class method
 //TODO add internal enable/disable timer interrupt/handler
 //TODO -- maybe use map of timer obj address -> channel index, and pass timer instance to handler
-static inline void onTimerCompareA(ServomotorTimer timerN, Timer16Bit *timer) {
+static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *timer) {
     uint8_t index;
 
     if (channels[timerN] < 0) {
@@ -71,18 +71,22 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16Bit *timer) {
 }
 
 #ifdef TCNT1
+#include <Timer1.h>
 static inline void onTimer1CompareA() { onTimerCompareA(SERVOMOTOR_TIMER1, &Timer1); }
 #endif
 
 #ifdef TCNT3
+#include <Timer3.h>
 static inline void onTimer3CompareA() { onTimerCompareA(SERVOMOTOR_TIMER3, &Timer3); }
 #endif
 
 #ifdef TCNT4
+#include <Timer4.h>
 static inline void onTimer4CompareA() { onTimerCompareA(SERVOMOTOR_TIMER4, &Timer4); }
 #endif
 
 #ifdef TCNT5
+#include <Timer5.h>
 static inline void onTimer5CompareA() { onTimerCompareA(SERVOMOTOR_TIMER5, &Timer5); }
 #endif
 
