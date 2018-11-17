@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define SERVOMOTOR_PULSE_MIN 544
+#define SERVOMOTOR_PULSE_MID 1472
+#define SERVOMOTOR_PULSE_MAX 2400
+
 class Servo {
 private:
     volatile uint8_t *port;

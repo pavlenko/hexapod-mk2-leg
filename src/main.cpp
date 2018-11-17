@@ -7,6 +7,7 @@
 #include <ES.h>
 #include <FSM.h>
 #include <ServoMotor.h>
+#include <Servo.h>
 #include <Timer0.h>
 #include <TWI.h>
 
@@ -79,6 +80,11 @@ void twiOnRequest() {
     //TODO handle commands from TWI module
 }
 
+static Servo *servo1;
+static Servo *servo2;
+static Servo *servo3;
+static Servo *servo4;
+
 int main() {
     // Initialize port for address configuration (set as input & enable internal pull-up resistors)
     DDRC  = 0x00;
@@ -95,21 +101,25 @@ int main() {
     EEPROM.read(EEPROM_SERVO1_MIN, &min);
     EEPROM.read(EEPROM_SERVO1_MAX, &max);
 
+    *servo1 = Servo(&PORTB, PB0, min, max);
     ServoMotor.attach(&PORTB, PB0, min, max);//TODO <-- save index of servo
 
     EEPROM.read(EEPROM_SERVO2_MIN, &min);
     EEPROM.read(EEPROM_SERVO2_MAX, &max);
 
+    *servo2 = Servo(&PORTB, PB1, min, max);
     ServoMotor.attach(&PORTB, PB1, min, max);//TODO <-- save index of servo
 
     EEPROM.read(EEPROM_SERVO3_MIN, &min);
     EEPROM.read(EEPROM_SERVO3_MAX, &max);
 
+    *servo3 = Servo(&PORTB, PB2, min, max);
     ServoMotor.attach(&PORTB, PB2, min, max);//TODO <-- save index of servo
 
     EEPROM.read(EEPROM_SERVO4_MIN, &min);
     EEPROM.read(EEPROM_SERVO4_MAX, &max);
 
+    *servo4 = Servo(&PORTB, PB3, min, max);
     ServoMotor.attach(&PORTB, PB3, min, max);//TODO <-- save index of servo
 
     // Initialize finite state machine
