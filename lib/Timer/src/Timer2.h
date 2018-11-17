@@ -7,6 +7,17 @@
 #error "You CPU does not support Timer 2"
 #endif
 
+#include <avr/interrupt.h>
+#include <avr/io.h>
+
+#if defined (TIMER2_COMP_vect)
+ISR(TIMER2_COMP_vect);
+#else
+ISR(TIMER2_COMPA_vect);
+ISR(TIMER2_COMPB_vect);
+#endif
+ISR(TIMER2_OVF_vect);
+
 class Timer2Class: public Timer8BitClass {
 #if defined (TIMER2_COMP_vect)
     friend void TIMER2_COMP_vect();

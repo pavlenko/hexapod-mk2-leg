@@ -3,9 +3,16 @@
 
 #include "Timer16Bit.h"
 
-#if (TIMER_16BIT_COUNT < 3)
-#error "You CPU does not support Timer 4"
-#endif
+#include <avr/interrupt.h>
+#include <avr/io.h>
+
+#if (TIMER_16BIT_COUNT > 2)
+
+ISR(TIMER4_COMPA_vect);
+ISR(TIMER4_COMPB_vect);
+ISR(TIMER4_COMPC_vect);
+ISR(TIMER4_OVF_vect);
+ISR(TIMER4_CAPT_vect);
 
 class Timer4Class: public Timer16BitClass {
     friend void TIMER4_COMPA_vect();
@@ -18,5 +25,7 @@ public:
 };
 
 extern Timer4Class Timer4;
+
+#endif //TIMER_16BIT_COUNT
 
 #endif //TIMER4_H

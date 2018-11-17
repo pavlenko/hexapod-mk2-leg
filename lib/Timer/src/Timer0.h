@@ -3,6 +3,17 @@
 
 #include "Timer8Bit.h"
 
+#include <avr/interrupt.h>
+#include <avr/io.h>
+
+#if defined (TIMER0_COMP_vect)
+ISR(TIMER0_COMP_vect);
+#else
+ISR(TIMER0_COMPA_vect);
+ISR(TIMER0_COMPB_vect);
+#endif
+ISR(TIMER0_OVF_vect);
+
 class Timer0Class: public Timer8BitClass {
 #if defined (TIMER0_COMP_vect)
     friend void TIMER0_COMP_vect();

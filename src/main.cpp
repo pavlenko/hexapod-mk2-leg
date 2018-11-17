@@ -7,7 +7,7 @@
 #include <ES.h>
 #include <FSM.h>
 #include <ServoMotor.h>
-#include <Timer.h>
+#include <Timer0.h>
 #include <TWI.h>
 
 #include <avr/interrupt.h>
