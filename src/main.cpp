@@ -16,6 +16,18 @@
 #include <stdint.h>
 #include <util/delay.h>
 
+#define EEPROM_SERVO1_MIN 0x00
+#define EEPROM_SERVO1_MAX 0x01
+
+#define EEPROM_SERVO2_MIN 0x02
+#define EEPROM_SERVO2_MAX 0x03
+
+#define EEPROM_SERVO3_MIN 0x04
+#define EEPROM_SERVO3_MAX 0x05
+
+#define EEPROM_SERVO4_MIN 0x06
+#define EEPROM_SERVO4_MAX 0x07
+
 #define MODE_IDLE      0
 #define MODE_ACTIVE    1
 #define MODE_CALIBRATE 2
@@ -68,25 +80,43 @@ void twiOnRequest() {
 }
 
 int main() {
+    // Initialize port for address configuration (set as input & enable internal pull-up resistors)
+    DDRC  = 0x00;
+    PORTC = 0xFF;
+
     // Initialize TWI
-    TWI.setAddress(0x01);
+    TWI.setAddress((uint8_t) (0xF0 | ~(PINC & 0x0F)));// <-- read low 4 bits, use connected to ground as 1
     TWI.setOnReceiveHandler(twiOnReceive);
     TWI.setOnRequestHandler(twiOnRequest);
+
+    // Read calibration from EEPROM & initialize servo motors
+    uint16_t min, max;
+
+    EEPROM.read(EEPROM_SERVO1_MIN, &min);
+    EEPROM.read(EEPROM_SERVO1_MAX, &max);
+
+    ServoMotor.attach(&PORTB, PB0, min, max);//TODO <-- save index of servo
+
+    EEPROM.read(EEPROM_SERVO2_MIN, &min);
+    EEPROM.read(EEPROM_SERVO2_MAX, &max);
+
+    ServoMotor.attach(&PORTB, PB1, min, max);//TODO <-- save index of servo
+
+    EEPROM.read(EEPROM_SERVO3_MIN, &min);
+    EEPROM.read(EEPROM_SERVO3_MAX, &max);
+
+    ServoMotor.attach(&PORTB, PB2, min, max);//TODO <-- save index of servo
+
+    EEPROM.read(EEPROM_SERVO4_MIN, &min);
+    EEPROM.read(EEPROM_SERVO4_MAX, &max);
+
+    ServoMotor.attach(&PORTB, PB3, min, max);//TODO <-- save index of servo
 
     // Initialize finite state machine
     FSM.initialize(STATE_IDLE);
 
-    //TODO Read calibration values from EEPROM
-    //TODO Read last values from EEPROM
-    //TODO Initialize servos
-
-    uint8_t value;
-    EEPROM.read(0, &value);
-
     DDRA  |= _BV(PA0);
     PORTA &= ~_BV(PA0);
-
-    PORTB = value;
 
     *Timer0.TCNTn = 5;
 
