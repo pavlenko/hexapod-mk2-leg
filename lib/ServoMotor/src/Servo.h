@@ -47,28 +47,28 @@ public:
      *
      * @return
      */
-    uint16_t getMIN();
+    uint16_t getMin();
 
     /**
      * Set min calibration value
      *
      * @param value
      */
-    void setMIN(uint16_t value);
+    void setMin(uint16_t value);
 
     /**
      * Get max calibration value
      *
      * @return
      */
-    uint16_t getMAX();
+    uint16_t getMax();
 
     /**
      * Set max calibration value
      *
      * @param value
      */
-    void setMAX(uint16_t value);
+    void setMax(uint16_t value);
 
     /**
      * Get angle value

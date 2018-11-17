@@ -20,19 +20,19 @@ void Servo::detach() {
     //TODO not yet implemented
 }
 
-uint16_t Servo::getMIN() {
+uint16_t Servo::getMin() {
     return this->min;
 }
 
-void Servo::setMIN(uint16_t value) {
+void Servo::setMin(uint16_t value) {
     this->min = value;
 }
 
-uint16_t Servo::getMAX() {
+uint16_t Servo::getMax() {
     return this->max;
 }
 
-void Servo::setMAX(uint16_t value) {
+void Servo::setMax(uint16_t value) {
     this->max = value;
 }
 
