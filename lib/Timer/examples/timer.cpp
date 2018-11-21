@@ -1,4 +1,4 @@
-#include <Timer.h>
+#include <Timer1.h>
 
 void timer1InterruptHandler() {
     // Do something on interrupt
@@ -31,6 +31,6 @@ int main() {
     *Timer1.OCRnA = 0xF0;
 
     // Enable interrupts
-    Timer0.setInterruptEnabled(TIMER_INTERRUPT_OVERFLOW, true);
-    Timer0.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
+    Timer1.setInterruptEnabled(TIMER_INTERRUPT_OVERFLOW, true);
+    Timer1.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
 }
