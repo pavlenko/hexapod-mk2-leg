@@ -69,6 +69,8 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *time
     }
 }
 
+//TODO optimize imports
+
 #ifdef TCNT1
 #include <Timer1.h>
 static inline void onTimer1CompareA() { onTimerCompareA(SERVOMOTOR_TIMER1, &Timer1); }
@@ -89,27 +91,69 @@ static inline void onTimer4CompareA() { onTimerCompareA(SERVOMOTOR_TIMER4, &Time
 static inline void onTimer5CompareA() { onTimerCompareA(SERVOMOTOR_TIMER5, &Timer5); }
 #endif
 
+void interruptEnable(ServomotorTimer timerN) {
+    if (SERVOMOTOR_TIMER1 == timerN) {
+        Timer1.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+        Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+        Timer1.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer1CompareA);
+        Timer1.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
+    }
+
+#if defined(TCNT3)
+    if (SERVOMOTOR_TIMER3 == timerN) {
+        Timer3.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+        Timer3.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+        Timer3.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer3CompareA);
+        Timer3.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
+    }
+#endif
+
+#if defined(TCNT4)
+    if (SERVOMOTOR_TIMER4 == timerN) {
+        Timer4.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+        Timer4.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+        Timer4.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer4CompareA);
+        Timer4.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
+    }
+#endif
+
+#if defined(TCNT5)
+    if (SERVOMOTOR_TIMER5 == timerN) {
+        Timer5.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+        Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
+        Timer5.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer5CompareA);
+        Timer5.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, true);
+    }
+#endif
+    (void) timerN;
+}
+
+void interruptDisable(ServomotorTimer timerN) {
+    if (SERVOMOTOR_TIMER1 == timerN) {
+        Timer1.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, false);
+    }
+#if defined(TCNT3)
+    if (SERVOMOTOR_TIMER3 == timerN) {
+        Timer3.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, false);
+    }
+#endif
+
+#if defined(TCNT4)
+    if (SERVOMOTOR_TIMER4 == timerN) {
+        Timer4.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, false);
+    }
+#endif
+
+#if defined(TCNT5)
+    if (SERVOMOTOR_TIMER5 == timerN) {
+        Timer5.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, false);
+    }
+#endif
+    (void) timerN;
+}
+
 ServoMotorClass::ServoMotorClass() {
-#ifdef TCNT1
-    Timer1.setCountMode(TIMER_16BIT_COUNT_NORMAL);
-    Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer1.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer1CompareA);
-#endif
-#ifdef TCNT3
-    Timer3.setCountMode(TIMER_16BIT_COUNT_NORMAL);
-    Timer3.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer3.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer3CompareA);
-#endif
-#ifdef TCNT4
-    Timer4.setCountMode(TIMER_16BIT_COUNT_NORMAL);
-    Timer4.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer4.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer4CompareA);
-#endif
-#ifdef TCNT5
-    Timer5.setCountMode(TIMER_16BIT_COUNT_NORMAL);
-    Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer5.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer5CompareA);
-#endif
+    //TODO resolve index
 }
 
 uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin) {

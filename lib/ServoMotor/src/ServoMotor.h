@@ -15,32 +15,32 @@
 #endif
 
 #ifndef SERVOMOTOR_USE_TIMER1
-#define SERVOMOTOR_USE_TIMER1 0
+#define SERVOMOTOR_USE_TIMER1 1
 #endif
 
 #ifndef SERVOMOTOR_USE_TIMER3
-#define SERVOMOTOR_USE_TIMER3 0
+#define SERVOMOTOR_USE_TIMER3 1
 #endif
 
 #ifndef SERVOMOTOR_USE_TIMER4
-#define SERVOMOTOR_USE_TIMER4 0
+#define SERVOMOTOR_USE_TIMER4 1
 #endif
 
 #ifndef SERVOMOTOR_USE_TIMER5
-#define SERVOMOTOR_USE_TIMER5 0
+#define SERVOMOTOR_USE_TIMER5 1
 #endif
 
 enum ServomotorTimer {
-#if defined(TCNT1)
+#if defined(TCNT1) && SERVOMOTOR_USE_TIMER1
     SERVOMOTOR_TIMER1,
 #endif
-#if defined(TCNT3)
+#if defined(TCNT3) && SERVOMOTOR_USE_TIMER1
     SERVOMOTOR_TIMER3,
 #endif
-#if defined(TCNT4)
+#if defined(TCNT4) && SERVOMOTOR_USE_TIMER1
     SERVOMOTOR_TIMER4,
 #endif
-#if defined(TCNT5)
+#if defined(TCNT5) && SERVOMOTOR_USE_TIMER1
     SERVOMOTOR_TIMER5,
 #endif
     SERVOMOTOR_TIMER_COUNT
@@ -143,15 +143,6 @@ public:
      * @param value
      */
     void setMicroseconds(uint8_t index, uint16_t value);
-
-    /**
-     * Update servo motors from timer interrupt
-     *
-     * @param timer
-     * @param TCNTn
-     * @param OCRnA
-     */
-    void update(ServomotorTimer timer, volatile uint16_t *TCNTn, volatile uint16_t *OCRnA);
 };
 
 extern ServoMotorClass ServoMotor;
