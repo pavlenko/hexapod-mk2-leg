@@ -33,7 +33,6 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-//TODO use this handler instead of class method
 //TODO add internal enable/disable timer interrupt/handler
 //TODO -- maybe use map of timer obj address -> channel index, and pass timer instance to handler
 static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *timer) {
@@ -92,15 +91,23 @@ static inline void onTimer5CompareA() { onTimerCompareA(SERVOMOTOR_TIMER5, &Time
 
 ServoMotorClass::ServoMotorClass() {
 #ifdef TCNT1
+    Timer1.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+    Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer1.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer1CompareA);
 #endif
 #ifdef TCNT3
+    Timer3.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+    Timer3.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer3.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer3CompareA);
 #endif
 #ifdef TCNT4
+    Timer4.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+    Timer4.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer4.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer4CompareA);
 #endif
 #ifdef TCNT5
+    Timer5.setCountMode(TIMER_16BIT_COUNT_NORMAL);
+    Timer5.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
     Timer5.setInterruptHandler(TIMER_INTERRUPT_COMPARE_MATCH_A, onTimer5CompareA);
 #endif
 }
