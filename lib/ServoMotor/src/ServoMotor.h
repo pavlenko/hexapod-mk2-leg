@@ -50,6 +50,10 @@ enum ServomotorTimer {
 
 class ServoMotorClass
 {
+private:
+    uint8_t index;
+    uint16_t min;
+    uint16_t max;
 public:
     ServoMotorClass();
 
@@ -75,74 +79,64 @@ public:
 
     /**
      * Detach servomotor
-     *
-     * @param index
      */
-    void detach(uint8_t index);
+    void detach();
 
     /**
      * Get calibration minimal ticks
      *
-     * @param index
      * @return
      */
-    uint16_t getMIN(uint8_t index);
+    uint16_t getMIN();
 
     /**
      * Set calibration minimal ticks
      *
-     * @param index
      * @param value
      */
-    void setMIN(uint8_t index, uint16_t value);
+    void setMIN(uint16_t value);
 
     /**
      * Get calibration maximum ticks
      *
-     * @param index
      * @return
      */
-    uint16_t getMAX(uint8_t index);
+    uint16_t getMAX();
 
     /**
      * Set calibration maximum ticks
      *
-     * @param index
      * @param value
      */
-    void setMAX(uint8_t index, uint16_t value);
+    void setMAX(uint16_t value);
 
     /**
      * Get angle as degree
      *
-     * @param index
      * @return
      */
-    uint16_t getAngle(uint8_t index);
+    uint16_t getAngle();
 
     /**
      * Set angle as degree
      *
-     * @param index
      * @param angle
      */
-    void setAngle(uint8_t index, uint16_t value);
+    void setAngle(uint16_t value);
 
     /**
      * Get angle as microseconds
      *
-     * @param index
      * @return
      */
-    uint16_t getMicroseconds(uint8_t index);
+    uint16_t getMicroseconds();
 
     /**
      * Set angle as microseconds
      *
-     * @param index
      * @param value
      */
-    void setMicroseconds(uint8_t index, uint16_t value);
+    void setMicroseconds(uint16_t value);
 };
 
 extern ServoMotorClass ServoMotor;
