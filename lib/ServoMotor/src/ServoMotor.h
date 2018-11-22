@@ -48,14 +48,14 @@ enum ServomotorTimer {
 
 #define SERVOMOTOR_TOTAL (SERVOMOTOR_PER_TIMER * SERVOMOTOR_TIMER_COUNT)
 
-class ServoMotorClass
+class ServoMotor
 {
 private:
     uint8_t index;
     uint16_t min;
     uint16_t max;
 public:
-    ServoMotorClass();
+    ServoMotor();
 
     /**
      * Attach servomotor to PIN of specific PORT
@@ -154,7 +154,5 @@ public:
      */
     void setMicroseconds(uint16_t value, uint8_t duration);
 };
-
-extern ServoMotorClass ServoMotor;
 
 #endif //SERVOMOTOR_H

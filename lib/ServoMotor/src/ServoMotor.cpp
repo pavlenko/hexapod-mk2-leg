@@ -21,12 +21,17 @@
 
 #include <util/atomic.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define TICKS_PER_US() (F_CPU / 1000000L)
 #define US_TO_TICKS(_val_) ((uint16_t) (_val_ * TICKS_PER_US() / 8))
 #define TICKS_TO_US(_val_) ((uint16_t) (_val_ * 8 / TICKS_PER_US()))
 #define REFRESH_US 20000U
+#define REFRESH_FPS 50U
 #define CONSTRAIN(_val_, _min_, _max_) (_min_ > _val_ ? _min_ : (_max_ < _val_ ? _max_ : _val_))
+
+#define SERVOMOTOR_INDEX_TO_TIMER(_index_) ((ServomotorTimer) (_index_ / SERVOMOTOR_PER_TIMER))
+#define SERVOMOTOR_INDEX_BY_TIMER(_timerN_, _channel_) ((_timerN_ * SERVOMOTOR_PER_TIMER) + _channel_)
 
 typedef struct {
     uint8_t number: 3;
@@ -37,6 +42,8 @@ typedef struct {
     volatile uint8_t *port;
     pin_t pin;
     uint16_t ticks;
+    uint16_t target;
+    uint16_t step;
 } servo_t;
 
 static volatile uint8_t count = 0;
@@ -53,7 +60,7 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *time
     if (channels[timerN] < 0) {
         *timer->TCNTn = 0;
     } else {
-        index = (timerN * SERVOMOTOR_PER_TIMER) + channels[timerN];
+        index = SERVOMOTOR_INDEX_BY_TIMER(timerN, channels[timerN]);
 
         if (index < count && servos[index].pin.attached) {
             *(servos[index].port) &= ~_BV(servos[index].pin.number);
@@ -62,10 +69,27 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *time
 
     channels[timerN]++;
 
-    index = (timerN * SERVOMOTOR_PER_TIMER) + channels[timerN];
+    index = SERVOMOTOR_INDEX_BY_TIMER(timerN, channels[timerN]);
 
     if (index < count && channels[timerN] < SERVOMOTOR_PER_TIMER) {
-        //TODO handle target & duration if duration is > 0
+        if (servos[index].step > 0) {
+            if (servos[index].target > servos[index].ticks) {
+                servos[index].ticks += servos[index].step;
+
+                if (servos[index].target <= servos[index].ticks) {
+                    servos[index].ticks = servos[index].target;
+                    servos[index].step  = 0;
+                }
+            } else {
+                servos[index].ticks -= servos[index].step;
+
+                if (servos[index].target >= servos[index].ticks) {
+                    servos[index].ticks = servos[index].target;
+                    servos[index].step  = 0;
+                }
+            }
+        }
+
         *timer->OCRnA = *timer->TCNTn + servos[index].ticks;
 
         if (servos[index].pin.attached) {
@@ -82,7 +106,7 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *time
     }
 }
 
-void interruptEnable(ServomotorTimer timerN) {
+static void interruptEnable(ServomotorTimer timerN) {
 #if defined(TCNT1) && SERVOMOTOR_USE_TIMER1
     if (SERVOMOTOR_TIMER1 == timerN) {
         Timer1.setCountMode(TIMER_16BIT_COUNT_NORMAL);
@@ -121,7 +145,7 @@ void interruptEnable(ServomotorTimer timerN) {
     (void) timerN;
 }
 
-void interruptDisable(ServomotorTimer timerN) {
+static void interruptDisable(ServomotorTimer timerN) {
 #if defined(TCNT1) && SERVOMOTOR_USE_TIMER1
     if (SERVOMOTOR_TIMER1 == timerN) {
         Timer1.setInterruptEnabled(TIMER_INTERRUPT_COMPARE_MATCH_A, false);
@@ -148,7 +172,23 @@ void interruptDisable(ServomotorTimer timerN) {
     (void) timerN;
 }
 
-ServoMotorClass::ServoMotorClass() {
+static bool isTimerActive(ServomotorTimer timerN) {
+    if (timerN >= SERVOMOTOR_TIMER_COUNT) {
+        return false;
+    }
+
+    for (uint8_t channel = 0; channel < SERVOMOTOR_PER_TIMER; channel++) {
+        uint8_t index = SERVOMOTOR_INDEX_BY_TIMER(timerN, channel);
+
+        if (servos[index].pin.attached) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ServoMotor::ServoMotor() {
     if (count < SERVOMOTOR_TOTAL) {
         this->index = count++;
         servos[this->index].ticks = US_TO_TICKS(SERVOMOTOR_PULSE_MID);
@@ -157,11 +197,11 @@ ServoMotorClass::ServoMotorClass() {
     }
 }
 
-uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin) {
+uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin) {
     return this->attach(port, pin, SERVOMOTOR_PULSE_MIN, SERVOMOTOR_PULSE_MAX);
 }
 
-uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
+uint8_t ServoMotor::attach(volatile uint8_t *port, uint8_t pin, uint16_t min, uint16_t max) {
     if (this->index < SERVOMOTOR_TOTAL) {
         this->min = min;
         this->max = max;
@@ -169,47 +209,58 @@ uint8_t ServoMotorClass::attach(volatile uint8_t *port, uint8_t pin, uint16_t mi
         servos[this->index].port = port;
 
         servos[this->index].pin.number   = pin;
-        servos[this->index].pin.attached = 1;
+
+        ServomotorTimer timer = SERVOMOTOR_INDEX_TO_TIMER(this->index);
+        if (!isTimerActive(timer)) {
+            interruptEnable(timer);
+        }
+
+        servos[this->index].pin.attached = 1; // <-- This must be last
     }
 
     return this->index;
 }
 
-void ServoMotorClass::detach() {
-    servos[this->index].pin.attached = 0;
+void ServoMotor::detach() {
+    servos[this->index].pin.attached = 0; // <-- This must be first
+
+    ServomotorTimer timer = SERVOMOTOR_INDEX_TO_TIMER(this->index);
+    if (!isTimerActive(timer)) {
+        interruptDisable(timer);
+    }
 }
 
-uint16_t ServoMotorClass::getMIN() {
+uint16_t ServoMotor::getMIN() {
     return this->min;
 }
 
-void ServoMotorClass::setMIN(uint16_t value) {
+void ServoMotor::setMIN(uint16_t value) {
     this->min = value;
 }
 
-uint16_t ServoMotorClass::getMAX() {
+uint16_t ServoMotor::getMAX() {
     return this->max;
 }
 
-void ServoMotorClass::setMAX(uint16_t value) {
+void ServoMotor::setMAX(uint16_t value) {
     this->max = value;
 }
 
-uint16_t ServoMotorClass::getAngle() {
+uint16_t ServoMotor::getAngle() {
     return (uint16_t) map(this->getMicroseconds(), this->min, this->max, 0, 180);
 }
 
-void ServoMotorClass::setAngle(uint16_t value) {
+void ServoMotor::setAngle(uint16_t value) {
     value = CONSTRAIN(value, 0, 180);
-    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max), 0);
+    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max));
 }
 
-void ServoMotorClass::setAngle(uint16_t value, uint8_t duration) {
+void ServoMotor::setAngle(uint16_t value, uint8_t duration) {
     value = CONSTRAIN(value, 0, 180);
     this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max), duration);
 }
 
-uint16_t ServoMotorClass::getMicroseconds() {
+uint16_t ServoMotor::getMicroseconds() {
     if (this->index != SERVOMOTOR_INVALID) {
         return TICKS_TO_US(servos[this->index].ticks);
     } else {
@@ -217,20 +268,27 @@ uint16_t ServoMotorClass::getMicroseconds() {
     }
 }
 
-void ServoMotorClass::setMicroseconds(uint16_t value) {
-    this->setMicroseconds(value, 0);
-}
-
-void ServoMotorClass::setMicroseconds(uint16_t value, uint8_t duration) {
+void ServoMotor::setMicroseconds(uint16_t value) {
     if (this->index != SERVOMOTOR_INVALID) {
         value = CONSTRAIN(value, this->min, this->max);
-        uint16_t ticks = US_TO_TICKS(value);
+        value = US_TO_TICKS(value);
 
         ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
-            //TODO set target & duration if duration is > 0
-            servos[this->index].ticks = ticks;
+            servos[this->index].ticks = value;
         }
     }
 }
 
-ServoMotorClass ServoMotor;
+void ServoMotor::setMicroseconds(uint16_t value, uint8_t duration) {
+    if (this->index != SERVOMOTOR_INVALID) {
+        value = CONSTRAIN(value, this->min, this->max);
+        value = US_TO_TICKS(value);
+
+        uint16_t step = abs(servos[this->index].ticks - value) / (REFRESH_FPS * duration);
+
+        ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
+            servos[this->index].target = value;
+            servos[this->index].step   = step;
+        }
+    }
+}
