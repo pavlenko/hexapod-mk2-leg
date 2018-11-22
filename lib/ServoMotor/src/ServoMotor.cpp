@@ -26,6 +26,7 @@
 #define US_TO_TICKS(_val_) ((uint16_t) (_val_ * TICKS_PER_US() / 8))
 #define TICKS_TO_US(_val_) ((uint16_t) (_val_ * 8 / TICKS_PER_US()))
 #define REFRESH_US 20000U
+#define CONSTRAIN(_val_, _min_, _max_) (_min_ > _val_ ? _min_ : (_max_ < _val_ ? _max_ : _val_))
 
 typedef struct {
     uint8_t number: 3;
@@ -64,6 +65,7 @@ static inline void onTimerCompareA(ServomotorTimer timerN, Timer16BitClass *time
     index = (timerN * SERVOMOTOR_PER_TIMER) + channels[timerN];
 
     if (index < count && channels[timerN] < SERVOMOTOR_PER_TIMER) {
+        //TODO handle target & duration if duration is > 0
         *timer->OCRnA = *timer->TCNTn + servos[index].ticks;
 
         if (servos[index].pin.attached) {
@@ -198,7 +200,13 @@ uint16_t ServoMotorClass::getAngle() {
 }
 
 void ServoMotorClass::setAngle(uint16_t value) {
-    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max));
+    value = CONSTRAIN(value, 0, 180);
+    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max), 0);
+}
+
+void ServoMotorClass::setAngle(uint16_t value, uint8_t duration) {
+    value = CONSTRAIN(value, 0, 180);
+    this->setMicroseconds((uint16_t) map(value, 0, 180, this->min, this->max), duration);
 }
 
 uint16_t ServoMotorClass::getMicroseconds() {
@@ -210,10 +218,16 @@ uint16_t ServoMotorClass::getMicroseconds() {
 }
 
 void ServoMotorClass::setMicroseconds(uint16_t value) {
+    this->setMicroseconds(value, 0);
+}
+
+void ServoMotorClass::setMicroseconds(uint16_t value, uint8_t duration) {
     if (this->index != SERVOMOTOR_INVALID) {
+        value = CONSTRAIN(value, this->min, this->max);
         uint16_t ticks = US_TO_TICKS(value);
 
         ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
+            //TODO set target & duration if duration is > 0
             servos[this->index].ticks = ticks;
         }
     }

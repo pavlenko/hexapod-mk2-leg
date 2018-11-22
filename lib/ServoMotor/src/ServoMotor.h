@@ -125,6 +125,14 @@ public:
     void setAngle(uint16_t value);
 
     /**
+     * Set angle as degree
+     *
+     * @param angle
+     * @param duration
+     */
+    void setAngle(uint16_t value, uint8_t duration);
+
+    /**
      * Get angle as microseconds
      *
      * @return
@@ -137,6 +145,14 @@ public:
      * @param value
      */
     void setMicroseconds(uint16_t value);
+
+    /**
+     * Set angle as microseconds
+     *
+     * @param value
+     * @param duration
+     */
+    void setMicroseconds(uint16_t value, uint8_t duration);
 };
 
 extern ServoMotorClass ServoMotor;
