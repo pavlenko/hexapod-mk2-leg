@@ -7,7 +7,6 @@
 #include <ES.h>
 #include <FSM.h>
 #include <ServoMotor.h>
-#include <Servo.h>
 #include <Timer0.h>
 #include <TWI.h>
 
@@ -80,10 +79,7 @@ void twiOnRequest() {
     //TODO handle commands from TWI module
 }
 
-static Servo *servo1;
-static Servo *servo2;
-static Servo *servo3;
-static Servo *servo4;
+static ServoMotor servos[4];
 
 int main() {
     // Initialize port for address configuration (set as input & enable internal pull-up resistors)
@@ -101,50 +97,30 @@ int main() {
     EEPROM.read(EEPROM_SERVO1_MIN, &min);
     EEPROM.read(EEPROM_SERVO1_MAX, &max);
 
-    *servo1 = Servo(&PORTB, PB0, min, max);
-    ServoMotor.attach(&PORTB, PB0, min, max);//TODO <-- save index of servo
+    servos[0].attach(&PORTB, PB0, min, max);
 
     EEPROM.read(EEPROM_SERVO2_MIN, &min);
     EEPROM.read(EEPROM_SERVO2_MAX, &max);
 
-    *servo2 = Servo(&PORTB, PB1, min, max);
-    ServoMotor.attach(&PORTB, PB1, min, max);//TODO <-- save index of servo
+    servos[1].attach(&PORTB, PB1, min, max);
 
     EEPROM.read(EEPROM_SERVO3_MIN, &min);
     EEPROM.read(EEPROM_SERVO3_MAX, &max);
 
-    *servo3 = Servo(&PORTB, PB2, min, max);
-    ServoMotor.attach(&PORTB, PB2, min, max);//TODO <-- save index of servo
+    servos[2].attach(&PORTB, PB2, min, max);
 
     EEPROM.read(EEPROM_SERVO4_MIN, &min);
     EEPROM.read(EEPROM_SERVO4_MAX, &max);
 
-    *servo4 = Servo(&PORTB, PB3, min, max);
-    ServoMotor.attach(&PORTB, PB3, min, max);//TODO <-- save index of servo
+    servos[3].attach(&PORTB, PB3, min, max);
 
     // Initialize finite state machine
     FSM.initialize(STATE_IDLE);
 
-    DDRA  |= _BV(PA0);
-    PORTA &= ~_BV(PA0);
-
-    *Timer0.TCNTn = 5;
-
-    /*Timer1.setClockSource(TIMER_CLOCK_DIVIDE_BY_8);
-    Timer1.setInterruptHandler(TIMER1_ISR_OUTPUT_COMPARE_A, [](){
-        ServoMotor.update(SERVOMOTOR_TIMER1, &TCNT1, &OCR1A);
-    });*/
-
+    // Global enable interrupts
     sei();
 
-    ES.attach(1, toggle_port);
-
-    while(true)
-    {
+    while (true) {
         ES.dispatch();
-        //PORTA |= _BV(PA0);
-        //_delay_ms(1000);
-        //PORTA &= ~_BV(PA0);
-        //_delay_ms(1000);
     }
 }
