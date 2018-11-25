@@ -104,6 +104,6 @@ public:
     void end();
 };
 
-SPIClass SPI;
+extern SPIClass SPI;
 
 #endif //SPI_H

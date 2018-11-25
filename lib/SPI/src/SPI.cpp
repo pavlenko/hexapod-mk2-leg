@@ -8,12 +8,12 @@ void SPIClass::initialize(SPIConnection_t connection) {
 }
 
 void SPIClass::setBusMode(SPIBusMode mode) {
-    uint8_t mask = (uint8_t) ~(_BV(connection.SS) | _BV(connection.SCK) | _BV(connection.MOSI) | _BV(connection.MISO));
+    //uint8_t mask = (uint8_t) ~(_BV(connection.SS) | _BV(connection.SCK) | _BV(connection.MOSI) | _BV(connection.MISO));
 
     if (SPI_BUS_MASTER == mode) {
-        *(connection.DDR) = (uint8_t) ((*(connection.DDR) & mask) | _BV(connection.MOSI) | _BV(connection.SCK));
+        *(connection.DDR) |= _BV(connection.MOSI) | _BV(connection.SCK);
     } else {
-        *(connection.DDR) = (uint8_t) ((*(connection.DDR) & mask) | _BV(connection.MISO));
+        //*(connection.DDR) = (uint8_t) ((*(connection.DDR) & mask) | _BV(connection.MISO));
     }
 
     SPCR = (uint8_t) ((SPCR & ~_BV(MSTR)) | (mode << MSTR));
@@ -72,3 +72,5 @@ void SPIClass::end() {
     // Set pin high to release slave
     *(this->slaveSelect.PORT) |= _BV(this->slaveSelect.SS);
 }
+
+SPIClass SPI;

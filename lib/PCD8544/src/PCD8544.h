@@ -6,8 +6,11 @@
 #include <avr/pgmspace.h>
 #include <stdint.h>
 
-#define PCD8544_WIDTH   84
-#define PCD8544_HEIGHT  48
+#define PCD8544_WIDTH  84
+#define PCD8544_HEIGHT 48
+#define PCD8544_ROWS   6
+
+#define PCD8544_RAM_SIZE 504
 
 /**
  * First 32 characters (0x00-0x19) are ignored. These are non-displayable, control characters.
@@ -127,20 +130,23 @@ typedef struct {
 #define PCD8544_VOP(_vop_) (0x80 | (0x7F & _vop_))
 #define PCD8544_TEMP_COEFFICIENT(_tc_) (0x04 | (0x03 & _tc_))
 #define PCD8544_BIAS(_bias_) (0x10 | (0x07 & _bias_))
+#define PCD8544_SET_X(_x_) (0x80 | (0x07 & _x_))
+#define PCD8544_SET_Y(_y_) (0x40 | (0x3F & _y_))
 
 class PCD8544Class {
 private:
     PCD8544Pin_t _reset;
     PCD8544Pin_t _dc;
+    SPISlaveSelect_t _ss;
 public:
     /**
      * Initialize LCD connection
      *
      * @param reset
      * @param dc
-     * @param slaveSelect
+     * @param ss
      */
-    void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t slaveSelect);
+    void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t ss);
 
     /**
      * Write byte to display
@@ -148,9 +154,27 @@ public:
      * @param dc
      * @param data
      */
-    void write(PCD8544_DC dc, uint8_t data);
+    void write(PCD8544_DC dc, uint8_t data);//TODO <-- internal
+
+    void write(char character) {
+        for (uint8_t i = 0; i < 5; i++) {
+            this->write(PCD8544_DC_DATA, pgm_read_byte(&ASCII[character - 0x20][i]));
+        }
+    }
+
+    void write(const char *string) {
+        while (*string != 0x00) {
+            this->write(*string++);
+            this->write(PCD8544_DC_DATA, 0x00);
+        }
+    }
 
     //TODO write char, string(, graphics???)
+
+    /**
+     * Flush internal buffer to display
+     */
+    void flush();
 };
 
 extern PCD8544Class PCD8544;

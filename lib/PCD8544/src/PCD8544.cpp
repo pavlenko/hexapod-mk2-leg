@@ -2,9 +2,12 @@
 
 #include <SPI.h>
 
-void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t slaveSelect) {
+uint8_t buffer[PCD8544_WIDTH * PCD8544_ROWS];
+
+void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t ss) {
     _reset = reset;
     _dc    = dc;
+    _ss    = ss;
 
     // Configure non-SPI bus pins
     *(_reset.DDR) |= _BV(_reset.PIN);
@@ -16,7 +19,7 @@ void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelec
     SPI.setBusMode(SPI_BUS_MASTER);
 
     // Connect to LCD
-    SPI.start(slaveSelect);
+    SPI.start(_ss);
 
     // Reset the LCD to a known state
     *(_reset.PORT) &= ~_BV(_reset.PIN);
@@ -27,20 +30,32 @@ void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelec
     this->write(PCD8544_DC_COMMAND, PCD8544_TEMP_COEFFICIENT(0x03)); // <-- Set Temp coefficient
     this->write(PCD8544_DC_COMMAND, PCD8544_BIAS(0x04));             // <-- Set LCD bias mode 1:48 (can try 0x03)
 
-    this->write(PCD8544_DC_COMMAND, PCD8544_FUNCTION_SET(0, 0, 1));  // <-- Tell LCD normal commands follow
+    this->write(PCD8544_DC_COMMAND, PCD8544_FUNCTION_SET(0, 0, 0));  // <-- Tell LCD normal commands follow
     this->write(PCD8544_DC_COMMAND, PCD8544_DISPLAY_CONTROL(1, 0));  // <-- Set display normal mode, not inverse
 }
 
 void PCD8544Class::write(PCD8544_DC dc, uint8_t data) {
     // Tell the LCD that we are writing either to data or a command
-    *(_dc.PORT) = (uint8_t) ((*(_dc.PORT) & _BV(_dc.PIN)) | (dc << _dc.PIN));
+    if (PCD8544_DC_DATA == dc) {
+        *(_dc.PORT) |= _BV(_dc.PIN);
+    } else {
+        *(_dc.PORT) &= ~_BV(_dc.PIN);
+    }
 
-    //Send the data
-    //digitalWrite(scePin, LOW);//TODO are this need?
+    //*(_ss.PORT) &= ~_BV(_ss.SS);//TODO are this need ???
 
     SPI.transfer(data);
 
-    //digitalWrite(scePin, HIGH);//TODO are this need?
+    //*(_ss.PORT) |= _BV(_ss.SS);//TODO are this need ???
+}
+
+void PCD8544Class::flush() {
+    this->write(PCD8544_DC_COMMAND, PCD8544_SET_X(0));
+    this->write(PCD8544_DC_COMMAND, PCD8544_SET_Y(0));
+
+    for (unsigned char i : buffer) {
+        this->write(PCD8544_DC_DATA, i);
+    }
 }
 
 PCD8544Class PCD8544;
