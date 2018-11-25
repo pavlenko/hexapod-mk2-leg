@@ -17,6 +17,13 @@ void PCD8544::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc) {
     *(reset.PORT) &= ~_BV(reset.PIN);
     *(reset.PORT) |= _BV(reset.PIN);
 
+    // Disable power down mode and set horizontal addressing
+    this->setPowerDownEnabled(false);
+    this->setVerticalAddressingEnabled(false);
+
+    // Enter extended instruction set
+    this->setExtendedInstructionEnabled(true);
+
     LCDWrite(LCD_COMMAND, 0x21); //Tell LCD extended commands follow
     LCDWrite(LCD_COMMAND, 0xB0); //Set LCD Vop (Contrast)
     LCDWrite(LCD_COMMAND, 0x04); //Set Temp coefficent

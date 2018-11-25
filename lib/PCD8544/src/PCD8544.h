@@ -142,20 +142,44 @@ enum PCD8544__H {
     PCD8544_H_EXTENDED
 };
 
-#define PCD8544_FUNCTION_SET(_PD_, _V_, _H_) (0x27 & ((_PD_ << 2)|(_V_ << 1)|_H_)))
+#define PCD8544_FUNCTION_SET(_PD_, _V_, _H_) (0x20 | (0x07 & ((_PD_ << 2) | (_V_ << 1) | _H_)))
+#define PCD8544_DISPLAY_CONTROL(_D_, _E_) (0x08 | (0x05 & ((_D_ << 2) | _E_)))
 
 class PCD8544 {
+private:
+    bool PD;
+    bool V;
+    bool H;
+    bool D;
+    bool E;
 public:
     void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc);
     void setContrast(uint8_t contrast);
     void write(PCD8544_DC dc, uint8_t data);//TODO write to display
 
-    void setFunctionSet(bool PD, bool V, bool H) {//TODO split booleans to separate methods & add internal register val
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (PD << 2) | (V << 1) | H));
+    void setPowerDownEnabled(bool enabled) {
+        this->PD = enabled;
+        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
     }
 
-    void setDisplayControl(bool D, bool E) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x08 | (D << 2) | E));
+    void setVerticalAddressingEnabled(bool enabled) {
+        this->V = enabled;
+        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
+    }
+
+    void setExtendedInstructionEnabled(bool enabled) {
+        this->H = enabled;
+        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
+    }
+
+    void setDisplayEnabled(bool enabled) {
+        this->D = enabled;
+        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x08 | (0x05 & ((this->D << 2) | this->E))));
+    }
+
+    void setDisplayInverse(bool inverse) {
+        this->E = inverse;
+        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x08 | (0x05 & ((this->D << 2) | this->E))));
     }
 
     void setX(uint8_t x) {
