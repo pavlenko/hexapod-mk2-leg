@@ -1,6 +1,8 @@
 #ifndef PCD8544_H
 #define PCD8544_H
 
+#include <SPI.h>
+
 #include <avr/pgmspace.h>
 #include <stdint.h>
 
@@ -126,16 +128,31 @@ typedef struct {
 #define PCD8544_TEMP_COEFFICIENT(_tc_) (0x04 | (0x03 & _tc_))
 #define PCD8544_BIAS(_bias_) (0x10 | (0x07 & _bias_))
 
-class PCD8544 {
+class PCD8544Class {
 private:
-    bool PD;
-    bool V;
-    bool H;
-    bool D;
-    bool E;
+    PCD8544Pin_t _reset;
+    PCD8544Pin_t _dc;
 public:
-    void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc);
-    void write(PCD8544_DC dc, uint8_t data);//TODO write to display
+    /**
+     * Initialize LCD connection
+     *
+     * @param reset
+     * @param dc
+     * @param slaveSelect
+     */
+    void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t slaveSelect);
+
+    /**
+     * Write byte to display
+     *
+     * @param dc
+     * @param data
+     */
+    void write(PCD8544_DC dc, uint8_t data);
+
+    //TODO write char, string(, graphics???)
 };
+
+extern PCD8544Class PCD8544;
 
 #endif //PCD8544_H

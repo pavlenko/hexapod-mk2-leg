@@ -5,6 +5,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
+enum SPIBusMode {
+    SPI_BUS_SLAVE,
+    SPI_BUS_MASTER,
+};
+
 enum SPIDataOrder {
     SPI_DATA_ORDER_MSB_FIRST,
     SPI_DATA_ORDER_LSB_FIRST,
@@ -33,12 +38,6 @@ typedef struct {
 } SPIConnection_t;
 
 typedef struct {
-    SPIClockSource clockSource;
-    SPIDataMode clockMode;
-    SPIDataOrder dataOrder;
-} SPISettings_t;
-
-typedef struct {
     volatile uint8_t *PORT;
     volatile uint8_t *DDR;
     uint8_t SS;
@@ -46,22 +45,22 @@ typedef struct {
 
 class SPIClass {
 private:
+    SPIConnection_t connection;
     SPISlaveSelect_t slaveSelect;
 public:
     /**
-     * Initialize SPI as master
-     *
-     * @param connection
-     * @param settings
-     */
-    void initialize(SPIConnection_t connection, SPISettings_t settings);
-
-    /**
-     * Initialize SPI as slave
+     * Initialize SPI connection
      *
      * @param connection
      */
     void initialize(SPIConnection_t connection);
+
+    /**
+     * Set SPI master/slave bus mode
+     *
+     * @param enabled
+     */
+    void setBusMode(SPIBusMode mode);
 
     /**
      * Set clock source divider
