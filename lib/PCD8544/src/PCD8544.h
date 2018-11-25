@@ -114,36 +114,17 @@ enum PCD8544_DC {
     PCD8544_DC_DATA
 };
 
-enum PCD8544_TC {
-    PCD8544_TC_0,
-    PCD8544_TC_1,
-    PCD8544_TC_2,
-    PCD8544_TC_3,
-};
-
 typedef struct {
     volatile uint8_t *PORT;
     volatile uint8_t *DDR;
     uint8_t PIN;
 } PCD8544Pin_t;
 
-enum PCD8544__PD {
-    PCD8544_PD_DISABLE,
-    PCD8544_PD_ENABLE
-};
-
-enum PCD8544__V {
-    PCD8544_V_HORIZONTAL,
-    PCD8544_V_VERTICAL
-};
-
-enum PCD8544__H {
-    PCD8544_H_NORMAL,
-    PCD8544_H_EXTENDED
-};
-
 #define PCD8544_FUNCTION_SET(_PD_, _V_, _H_) (0x20 | (0x07 & ((_PD_ << 2) | (_V_ << 1) | _H_)))
 #define PCD8544_DISPLAY_CONTROL(_D_, _E_) (0x08 | (0x05 & ((_D_ << 2) | _E_)))
+#define PCD8544_VOP(_vop_) (0x80 | (0x7F & _vop_))
+#define PCD8544_TEMP_COEFFICIENT(_tc_) (0x04 | (0x03 & _tc_))
+#define PCD8544_BIAS(_bias_) (0x10 | (0x07 & _bias_))
 
 class PCD8544 {
 private:
@@ -154,53 +135,7 @@ private:
     bool E;
 public:
     void initialize(PCD8544Pin_t reset, PCD8544Pin_t dc);
-    void setContrast(uint8_t contrast);
     void write(PCD8544_DC dc, uint8_t data);//TODO write to display
-
-    void setPowerDownEnabled(bool enabled) {
-        this->PD = enabled;
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
-    }
-
-    void setVerticalAddressingEnabled(bool enabled) {
-        this->V = enabled;
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
-    }
-
-    void setExtendedInstructionEnabled(bool enabled) {
-        this->H = enabled;
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x20 | (0x07 & ((this->PD << 2) | (this->V << 1) | this->H))));
-    }
-
-    void setDisplayEnabled(bool enabled) {
-        this->D = enabled;
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x08 | (0x05 & ((this->D << 2) | this->E))));
-    }
-
-    void setDisplayInverse(bool inverse) {
-        this->E = inverse;
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x08 | (0x05 & ((this->D << 2) | this->E))));
-    }
-
-    void setX(uint8_t x) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x80 | x));
-    }
-
-    void setY(uint8_t y) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x40 | y));
-    }
-
-    void setTemperatureCoefficient(PCD8544_TC coefficient) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x04 | coefficient));
-    }
-
-    void setBiasSystem(uint8_t bias) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x10 | bias));
-    }
-
-    void setVOP(uint8_t vop) {
-        this->write(PCD8544_DC_COMMAND, (uint8_t) (0x80 | vop));
-    }
 };
 
 #endif //PCD8544_H

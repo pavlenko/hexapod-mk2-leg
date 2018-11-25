@@ -6,8 +6,8 @@
 #include <stddef.h>
 
 enum SPIDataOrder {
-    SPI_DATA_ORDER_MSB,
-    SPI_DATA_ORDER_LSB,
+    SPI_DATA_ORDER_MSB_FIRST,
+    SPI_DATA_ORDER_LSB_FIRST,
 };
 
 enum SPIClockSource {
@@ -17,11 +17,11 @@ enum SPIClockSource {
     SPI_CLOCK_DIVIDE_BY_128,
 };
 
-enum SPIClockMode {
-    SPI_CLOCK_SAMPLE_RISING_NORMAL,
-    SPI_CLOCK_SAMPLE_FALLING_NORMAL,
-    SPI_CLOCK_SAMPLE_RISING_INVERTED,
-    SPI_CLOCK_SAMPLE_FALLING_INVERTED,
+enum SPIDataMode {
+    SPI_MODE_SAMPLE_RISING_NORMAL,
+    SPI_MODE_SAMPLE_FALLING_NORMAL,
+    SPI_MODE_SAMPLE_RISING_INVERTED,
+    SPI_MODE_SAMPLE_FALLING_INVERTED,
 };
 
 typedef struct {
@@ -34,7 +34,7 @@ typedef struct {
 
 typedef struct {
     SPIClockSource clockSource;
-    SPIClockMode clockMode;
+    SPIDataMode clockMode;
     SPIDataOrder dataOrder;
 } SPISettings_t;
 
@@ -62,6 +62,27 @@ public:
      * @param connection
      */
     void initialize(SPIConnection_t connection);
+
+    /**
+     * Set clock source divider
+     *
+     * @param clockSource
+     */
+    void setClockSource(SPIClockSource clockSource, bool x2);
+
+    /**
+     * Set data order
+     *
+     * @param dataOrder
+     */
+    void setDataOrder(SPIDataOrder dataOrder);
+
+    /**
+     * Set data mode
+     *
+     * @param dataMode
+     */
+    void setDataMode(SPIDataMode dataMode);
 
     /**
      * Enable SPI and start transmission to slave

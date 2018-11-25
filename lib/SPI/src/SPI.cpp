@@ -22,6 +22,19 @@ void SPIClass::initialize(SPIConnection_t connection) {
     SPCR &= ~_BV(MSTR);
 }
 
+void SPIClass::setClockSource(SPIClockSource clockSource, bool x2) {
+    SPCR = (uint8_t) ((SPCR & 0b11111100) | clockSource);
+    SPSR = (uint8_t) ((SPSR & 0b11111110) | x2);
+}
+
+void SPIClass::setDataOrder(SPIDataOrder dataOrder) {
+    SPCR = (uint8_t) ((SPCR & ~_BV(DORD)) | (dataOrder << DORD));
+}
+
+void SPIClass::setDataMode(SPIDataMode dataMode) {
+    SPCR = (uint8_t) ((SPCR & 0b11110011) | (dataMode << CPHA));
+}
+
 void SPIClass::start(SPISlaveSelect_t slaveSelect) {
     // Save slave reference for disconnect after
     this->slaveSelect = slaveSelect;
