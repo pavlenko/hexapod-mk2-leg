@@ -9,6 +9,15 @@ private:
     uint8_t _width;
     uint8_t _height;
     void (*_draw)();
+
+    /**
+     * Draw single symbol, used in string
+     *
+     * @param symbol
+     * @param x
+     * @param y
+     */
+    void symbol(char symbol, uint8_t x, uint8_t y, uint8_t offset);
 public:
     /**
      * Initialize LCD buffer, size and draw callback
@@ -39,8 +48,9 @@ public:
      *
      * @param x
      * @param y
+     * @param value
      */
-    void pixel(uint8_t x, uint8_t y);
+    void pixel(uint8_t x, uint8_t y, bool value);
 
     /**
      * Draw line
