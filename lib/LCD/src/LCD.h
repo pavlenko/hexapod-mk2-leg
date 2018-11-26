@@ -6,19 +6,19 @@
 class LCD {
 private:
     uint8_t *_buffer;
-    uint8_t _w;
-    uint8_t _h;
+    uint8_t _width;
+    uint8_t _height;
     void (*_draw)();
 public:
     /**
      * Initialize LCD buffer, size and draw callback
      *
      * @param buffer
-     * @param w
-     * @param h
+     * @param width
+     * @param height
      * @param draw
      */
-    LCD(uint8_t *buffer, uint8_t w, uint8_t h, void (*draw)());
+    LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*draw)());
 
     /**
      * Clear buffer to initial state

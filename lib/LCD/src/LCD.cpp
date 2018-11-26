@@ -1,15 +1,27 @@
 #include "LCD.h"
+#include "LCDFont5x7.h"
 
-LCD::LCD(uint8_t *buffer, uint8_t w, uint8_t h, void (*draw)()) {
-//TODO not yet implemented
+LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*draw)()) {
+    _buffer = buffer;
+    _width  = width;
+    _height = height;
+    _draw   = draw;
 }
 
 void LCD::clear() {
-//TODO not yet implemented
+    for (uint8_t y = 0; y < _height / 8; y++) {
+        for (uint8_t x = 0; x < _width; y++) {
+            *(_buffer + (x * y)) = 0x00;
+        }
+    }
 }
 
 void LCD::string(const char *string, uint8_t x, uint8_t y) {
-//TODO not yet implemented
+    //TODO not yet implemented
+    while (*string != 0x00) {
+        //TODO check if y is divided by 8: yes - simple write bytes, else write each byte 2 times (upper part & lower part)
+        string++;
+    }
 }
 
 void LCD::pixel(uint8_t x, uint8_t y) {
