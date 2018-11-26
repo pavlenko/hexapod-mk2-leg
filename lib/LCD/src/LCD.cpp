@@ -1,6 +1,8 @@
 #include "LCD.h"
 #include "LCDFont5x7.h"
 
+#include <stdlib.h>
+
 LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t byte)) {
     _buffer = buffer;
     _width  = width;
@@ -76,8 +78,50 @@ void LCD::pixel(int x, int y, bool value) {
     }
 }
 
-void LCD::line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
-//TODO not yet implemented
+void LCD::line(int x0, int y0, int x1, int y1) {
+    int diffX = abs(x1 - x0);
+    int diffY = abs(y1 - y0);
+
+    int stepX = (x0 > x1) ? -1 : 1;
+    int stepY = (y0 > y1) ? -1 : 1;
+
+    //TODO check if this works
+    diffY <<= 1; // diffY is now 2*diffY
+    diffX <<= 1; // diffX is now 2*diffX
+
+    this->pixel(x0, y0, true);
+
+    if (diffX > diffY) {
+        // Optimization for draw line with width > height
+        int fraction = diffY - (diffX >> 1);
+
+        while (x0 != x1) {
+            if (fraction >= 0) {
+                y0       += stepY;
+                fraction -= diffX;
+            }
+
+            x0       += stepX;
+            fraction += diffY;
+
+            this->pixel(x0, y0, true);
+        }
+    } else {
+        // Optimization for draw line with width < height
+        int fraction = diffX - (diffY >> 1);
+
+        while (y0 != y1) {
+            if (fraction >= 0) {
+                x0       += stepX;
+                fraction -= diffY;
+            }
+
+            y0       += stepY;
+            fraction += diffX;
+
+            this->pixel(x0, y0, true);
+        }
+    }
 }
 
 void LCD::rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {

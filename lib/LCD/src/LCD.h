@@ -60,7 +60,7 @@ public:
      * @param x2
      * @param y2
      */
-    void line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
+    void line(int x1, int y1, int x2, int y2);
 
     /**
      * Draw rectangle
