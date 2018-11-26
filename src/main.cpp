@@ -7,7 +7,9 @@
 #include <ES.h>
 #include <FSM.h>
 #include <LCD.h>
+#include <SPI.h>
 #include <ServoMotor.h>
+#include <PCD8544.h>
 #include <Timer0.h>
 #include <TWI.h>
 
@@ -82,14 +84,24 @@ void twiOnRequest() {
 
 static ServoMotor servos[4];
 
-static uint8_t LCDBuffer[84 * 48];
+static uint8_t LCDBuffer[84 * (48 / 8)];
 
 void draw(uint8_t byte) {}
 
 int main() {
-    LCD lcd = LCD(LCDBuffer, 84, 48, draw);
-    lcd.clear();
-    lcd.string("HELLO", 0, 0);
+    SPI.initialize({&DDRB, PIN4, PIN7, PIN5, PIN6});
+
+    PCD8544.initialize({&PORTB, &DDRB, PIN2}, {&PORTB, &DDRB, PIN3}, {&PORTB, &DDRB, PIN4});
+
+    LCD lcd = LCD(LCDBuffer, 84, 48, [](uint8_t byte){ PCD8544.write(PCD8544_DC_DATA, byte); });
+    //lcd.clear();
+    lcd.line(0, 0, 50, 20);
+    lcd.circle(15, 15, 15);
+    lcd.flush();
+
+    //PCD8544.write("HELLO");
+
+    while (true) {}
 
     // Initialize port for address configuration (set as input & enable internal pull-up resistors)
     DDRC  = 0x00;

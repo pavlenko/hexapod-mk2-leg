@@ -41,6 +41,7 @@ void LCD::string(const char *string, uint8_t x, uint8_t y) {
     auto offset = (uint8_t) (y % 8);
 
     while (*string != 0x00) {
+        //TODO remove usage symbol method & fix offsets
         this->symbol(*string++, x, y, offset);
 
         x += 5;
@@ -167,9 +168,7 @@ void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 }
 
 void LCD::flush() {
-    for (uint8_t y = 0; y < _height / 8; y++) {
-        for (uint8_t x = 0; x < _width; y++) {
-            _write(*(_buffer + (x * y)));
-        }
+    for (int i = 0; i < (_width * _height / 8); i++) {
+        _write(*(_buffer + i));
     }
 }

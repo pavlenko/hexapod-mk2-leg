@@ -156,12 +156,14 @@ public:
      */
     void write(PCD8544_DC dc, uint8_t data);//TODO <-- internal
 
+    //TODO remove
     void write(char character) {
         for (uint8_t i = 0; i < 5; i++) {
             this->write(PCD8544_DC_DATA, pgm_read_byte(&ASCII[character - 0x20][i]));
         }
     }
 
+    //TODO remove
     void write(const char *string) {
         while (*string != 0x00) {
             this->write(*string++);
@@ -170,11 +172,6 @@ public:
     }
 
     //TODO write char, string(, graphics???)
-
-    /**
-     * Flush internal buffer to display
-     */
-    void flush();
 };
 
 extern PCD8544Class PCD8544;

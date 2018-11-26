@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+//TODO flush pass entry buffer to callback to allow reset x,y coordinates
+//TODO flush part of buffer by define x,y,w,h
 class LCD {
 private:
     uint8_t *_buffer;

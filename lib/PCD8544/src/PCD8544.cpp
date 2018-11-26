@@ -2,8 +2,6 @@
 
 #include <SPI.h>
 
-uint8_t buffer[PCD8544_WIDTH * PCD8544_ROWS];
-
 void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t ss) {
     _reset = reset;
     _dc    = dc;
@@ -47,15 +45,6 @@ void PCD8544Class::write(PCD8544_DC dc, uint8_t data) {
     SPI.transfer(data);
 
     //*(_ss.PORT) |= _BV(_ss.SS);//TODO are this need ???
-}
-
-void PCD8544Class::flush() {
-    this->write(PCD8544_DC_COMMAND, PCD8544_SET_X(0));
-    this->write(PCD8544_DC_COMMAND, PCD8544_SET_Y(0));
-
-    for (unsigned char i : buffer) {
-        this->write(PCD8544_DC_DATA, i);
-    }
 }
 
 PCD8544Class PCD8544;
