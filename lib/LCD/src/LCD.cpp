@@ -63,10 +63,10 @@ void LCD::string(const char *string, uint8_t x, uint8_t y) {
     }
 }
 
-void LCD::pixel(uint8_t x, uint8_t y, bool value) {
+void LCD::pixel(int x, int y, bool value) {
     if (x >= 0 && x < _width && y >= 0 && y < _height) {
-        auto shift = (uint8_t) (y % 8);
-        auto index = (uint8_t) (x + (y / 8) * _width);
+        int shift = (y % 8);
+        int index = (x + (y / 8) * _width);
 
         if (value) {
             *(_buffer + index) |=  (1 << shift);
@@ -84,8 +84,34 @@ void LCD::rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
 //TODO not yet implemented
 }
 
-void LCD::circle(uint8_t x, uint8_t y, uint8_t radius) {
-//TODO not yet implemented
+void LCD::circle(int x0, int y0, int radius) {
+    int x   = radius - 1;
+    int y   = 0;
+    int dx  = 1;
+    int dy  = 1;
+    int err = dx - (radius << 1);
+
+    while (x >= y)
+    {
+        this->pixel(x0 + x, y0 + y, true);
+        this->pixel(x0 + y, y0 + x, true);
+        this->pixel(x0 - y, y0 + x, true);
+        this->pixel(x0 - x, y0 + y, true);
+        this->pixel(x0 - x, y0 - y, true);
+        this->pixel(x0 - y, y0 - x, true);
+        this->pixel(x0 + y, y0 - x, true);
+        this->pixel(x0 + x, y0 - y, true);
+
+        if (err <= 0) {
+            y++;
+            err += dy;
+            dy  += 2;
+        } else {
+            x--;
+            dx  += 2;
+            err += dx - (radius << 1);
+        }
+    }
 }
 
 void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {

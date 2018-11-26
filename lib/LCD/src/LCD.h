@@ -50,7 +50,7 @@ public:
      * @param y
      * @param value
      */
-    void pixel(uint8_t x, uint8_t y, bool value);
+    void pixel(int x, int y, bool value);
 
     /**
      * Draw line
@@ -79,7 +79,7 @@ public:
      * @param y
      * @param radius
      */
-    void circle(uint8_t x, uint8_t y, uint8_t radius);
+    void circle(int x, int y, int radius);
 
     /**
      * Draw bitmap
