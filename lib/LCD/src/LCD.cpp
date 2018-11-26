@@ -159,7 +159,11 @@ void LCD::circle(int x0, int y0, int radius) {
 }
 
 void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-//TODO not yet implemented
+    //TODO calculate row shift, min row, max row
+
+    for (int i = 0; i < (_width * _height / 8); i++) {
+        *(_buffer + (x * y)) = pgm_read_byte(&bitmap[i]);
+    }
 }
 
 void LCD::flush() {
