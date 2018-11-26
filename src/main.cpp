@@ -6,6 +6,7 @@
 #include <EEPROM.h>
 #include <ES.h>
 #include <FSM.h>
+#include <LCD.h>
 #include <ServoMotor.h>
 #include <Timer0.h>
 #include <TWI.h>
@@ -81,7 +82,15 @@ void twiOnRequest() {
 
 static ServoMotor servos[4];
 
+static uint8_t LCDBuffer[84 * 48];
+
+void draw(uint8_t byte) {}
+
 int main() {
+    LCD lcd = LCD(LCDBuffer, 84, 48, draw);
+    lcd.clear();
+    lcd.string("HELLO", 0, 0);
+
     // Initialize port for address configuration (set as input & enable internal pull-up resistors)
     DDRC  = 0x00;
     PORTC = 0xFF;

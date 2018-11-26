@@ -1,11 +1,11 @@
 #include "LCD.h"
 #include "LCDFont5x7.h"
 
-LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*draw)()) {
+LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t byte)) {
     _buffer = buffer;
     _width  = width;
     _height = height;
-    _draw   = draw;
+    _write  = write;
 }
 
 void LCD::clear() {
@@ -93,5 +93,9 @@ void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 }
 
 void LCD::flush() {
-//TODO not yet implemented
+    for (uint8_t y = 0; y < _height / 8; y++) {
+        for (uint8_t x = 0; x < _width; y++) {
+            _write(*(_buffer + (x * y)));
+        }
+    }
 }

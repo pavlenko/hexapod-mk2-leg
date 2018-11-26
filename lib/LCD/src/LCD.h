@@ -8,7 +8,7 @@ private:
     uint8_t *_buffer;
     uint8_t _width;
     uint8_t _height;
-    void (*_draw)();
+    void (*_write)(uint8_t byte);
 
     /**
      * Draw single symbol, used in string
@@ -25,9 +25,9 @@ public:
      * @param buffer
      * @param width
      * @param height
-     * @param draw
+     * @param write
      */
-    LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*draw)());
+    LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t byte));
 
     /**
      * Clear buffer to initial state
