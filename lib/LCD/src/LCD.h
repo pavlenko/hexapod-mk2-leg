@@ -78,13 +78,14 @@ public:
     /**
      * Draw bitmap
      *
-     * @param bitmap
-     * @param x
-     * @param y
-     * @param w
-     * @param h
+     * @param bitmap   Byte array
+     * @param x        Horizontal offset, px
+     * @param y        Vertical offset, px
+     * @param width    Width, px
+     * @param height   Height, px
+     * @param vertical Byte orientation
      */
-    void bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+    void bitmap(const uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool vertical = false);
 
     /**
      * Send buffer to display via draw callback

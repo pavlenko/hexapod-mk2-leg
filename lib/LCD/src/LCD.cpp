@@ -169,7 +169,7 @@ void LCD::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
     }
 }
 
-void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
+void LCD::bitmap(const uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool vertical) {
     //TODO calculate row shift, min row, max row
 
     for (int i = 0; i < (_width * _height / 8); i++) {
