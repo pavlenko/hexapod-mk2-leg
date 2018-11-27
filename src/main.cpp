@@ -97,6 +97,7 @@ int main() {
     //lcd.clear();
     lcd.line(0, 0, 50, 20);
     lcd.circle(15, 15, 15);
+    lcd.string("HELLO", 0, 34);
     lcd.flush();
 
     //PCD8544.write("HELLO");

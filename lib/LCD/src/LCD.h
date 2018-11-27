@@ -19,7 +19,7 @@ private:
      * @param x
      * @param y
      */
-    void symbol(char symbol, uint8_t x, uint8_t y, uint8_t offset);
+    void symbol(char symbol, uint8_t x, uint8_t y);
 public:
     /**
      * Initialize LCD buffer, size and draw callback
