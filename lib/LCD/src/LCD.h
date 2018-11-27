@@ -10,7 +10,8 @@ private:
     uint8_t *_buffer;
     uint8_t _width;
     uint8_t _height;
-    void (*_write)(uint8_t byte);
+    uint16_t _size;
+    void (*_write)(uint8_t);
 public:
     /**
      * Initialize LCD buffer, size and draw callback
@@ -20,7 +21,7 @@ public:
      * @param height
      * @param write
      */
-    LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t byte));
+    LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t));
 
     /**
      * Clear buffer to initial state
@@ -34,7 +35,7 @@ public:
      * @param x
      * @param y
      */
-    void string(const char *string, uint8_t x, uint8_t y);
+    void string(const char *string, uint8_t x, uint8_t y, bool wrap = true);
 
     /**
      * Draw single pixel

@@ -4,21 +4,22 @@
 #include <avr/pgmspace.h>
 #include <stdlib.h>
 
-LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t byte)) {
+LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t)) {
     _buffer = buffer;
     _width  = width;
     _height = height;
     _write  = write;
+
+    _size = (uint16_t) (_width * _height / 8);
 }
 
 void LCD::clear() {
-    for (int i = 0; i < (_width * _height / 8); i++) {
+    for (int i = 0; i < _size; i++) {
         *(_buffer + i) = 0x00;
     }
 }
 
-//TODO check string in display boundaries or maybe use pixel method for automatically fit lcd size
-void LCD::string(const char *string, uint8_t x, uint8_t y) {
+void LCD::string(const char *string, uint8_t x, uint8_t y, bool wrap) {
     int shift = (y % 8), index;
 
     while (*string != 0x00) {
@@ -27,15 +28,19 @@ void LCD::string(const char *string, uint8_t x, uint8_t y) {
         for (uint8_t i = 0; i < 5; i++) {
             uint8_t column = pgm_read_byte(&LCDFont5x7[(*string) - 0x20][i]);
 
-            if (shift == 0) {
-                // Single row render
-                *(_buffer + index + i) = column;
-            } else {
-                // First row render
-                *(_buffer + index + i) = column << shift;
+            if (index + i < _size) {
+                if (shift == 0) {
+                    // Single row render
+                    *(_buffer + index + i) = column;
+                } else {
+                    // First row render
+                    *(_buffer + index + i) = column << shift;
 
-                // Second row render
-                *(_buffer + index + i + _width) = column >> (8 - shift);
+                    if (index + i + _width < _size) {
+                        // Second row render
+                        *(_buffer + index + i + _width) = column >> (8 - shift);
+                    }
+                }
             }
         }
 
@@ -45,20 +50,24 @@ void LCD::string(const char *string, uint8_t x, uint8_t y) {
         x += 5;
 
         index = (x + (y / 8) * _width);
-        if (shift == 0) {
-            // Single row render
-            *(_buffer + index) = 0x00;
-        } else {
-            // First row render
-            *(_buffer + index) = 0x00;
+        if (index < _size) {
+            if (shift == 0) {
+                // Single row render
+                *(_buffer + index) = 0x00;
+            } else {
+                // First row render
+                *(_buffer + index) = 0x00;
 
-            // Second row render
-            *(_buffer + index + _width) = 0x00;
+                if (index + _width < _size) {
+                    // Second row render
+                    *(_buffer + index + _width) = 0x00;
+                }
+            }
         }
 
         x++;
 
-        if (x > (_width - 5)) {//TODO optional wrap
+        if (wrap && x > (_width - 5)) {
             x = 0;
             y += 8;
         }
@@ -124,7 +133,6 @@ void LCD::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
 }
 
 void LCD::rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
-//TODO not yet implemented
     this->line(x1, y1, x1, y2);
     this->line(x2, y1, x2, y2);
     this->line(x1, y1, x2, y1);
@@ -170,7 +178,7 @@ void LCD::bitmap(uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 }
 
 void LCD::flush() {
-    for (int i = 0; i < (_width * _height / 8); i++) {
+    for (int i = 0; i < _size; i++) {
         _write(*(_buffer + i));
     }
 }
