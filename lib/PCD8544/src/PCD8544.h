@@ -154,24 +154,21 @@ public:
      * @param dc
      * @param data
      */
-    void write(PCD8544_DC dc, uint8_t data);//TODO <-- internal
+    void write(PCD8544_DC dc, uint8_t data);
 
-    //TODO remove
-    void write(char character) {
-        for (uint8_t i = 0; i < 5; i++) {
-            this->write(PCD8544_DC_DATA, pgm_read_byte(&ASCII[character - 0x20][i]));
-        }
-    }
+    /**
+     * Set x column address
+     *
+     * @param value
+     */
+    void setX(uint8_t value);
 
-    //TODO remove
-    void write(const char *string) {
-        while (*string != 0x00) {
-            this->write(*string++);
-            this->write(PCD8544_DC_DATA, 0x00);
-        }
-    }
-
-    //TODO write char, string(, graphics???)
+    /**
+     * Set y row address
+     *
+     * @param value
+     */
+    void setY(uint8_t value);
 };
 
 extern PCD8544Class PCD8544;

@@ -12,60 +12,56 @@ LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t b
 }
 
 void LCD::clear() {
-    for (uint8_t y = 0; y < _height / 8; y++) {
-        for (uint8_t x = 0; x < _width; y++) {
-            *(_buffer + (x * y)) = 0x00;
-        }
+    for (int i = 0; i < (_width * _height / 8); i++) {
+        *(_buffer + i) = 0x00;
     }
 }
 
-void LCD::symbol(char symbol, uint8_t x, uint8_t y) {
-    int shift = (y % 8);
-    int index = (x + (y / 8) * _width);
-    //uint8_t column;
-
-    for (uint8_t i = 0; i < 5; i++) {
-        uint8_t column = pgm_read_byte(&LCDFont5x7[symbol - 0x20][i]);
-
-        if (shift == 0) {
-            // Single row render
-            *(_buffer + index + i) = column;
-        } else {
-            // First row render
-            *(_buffer + index + i) = column >> shift;//TODO do not overwrite unused bits
-
-            // Second row render
-            *(_buffer + index + i + _width) = column << (8 - shift);//TODO do not overwrite unused bits
-        }
-    }
-}
-
+//TODO check string in display boundaries or maybe use pixel method for automatically fit lcd size
 void LCD::string(const char *string, uint8_t x, uint8_t y) {
+    int shift = (y % 8), index;
+
     while (*string != 0x00) {
-        //TODO remove usage symbol method & fix offsets
-        this->symbol(*string++, x, y);
+        index = (x + (y / 8) * _width);
+
+        for (uint8_t i = 0; i < 5; i++) {
+            uint8_t column = pgm_read_byte(&LCDFont5x7[(*string) - 0x20][i]);
+
+            if (shift == 0) {
+                // Single row render
+                *(_buffer + index + i) = column;
+            } else {
+                // First row render
+                *(_buffer + index + i) = column << shift;
+
+                // Second row render
+                *(_buffer + index + i + _width) = column >> (8 - shift);
+            }
+        }
+
+        // Go to next char
+        string++;
 
         x += 5;
 
-        int shift = (y % 8);
-        int index = (x + (y / 8) * _width);
-        /*if (offset == 0) {
+        index = (x + (y / 8) * _width);
+        if (shift == 0) {
             // Single row render
-            *(_buffer + (x * y)) = 0x00;
+            *(_buffer + index) = 0x00;
         } else {
             // First row render
-            *(_buffer + (x * y)) = 0x00;//TODO do not overwrite unused bits
+            *(_buffer + index) = 0x00;
 
             // Second row render
-            *(_buffer + (x * (y + 8))) = 0x00;//TODO do not overwrite unused bits
-        }*/
+            *(_buffer + index + _width) = 0x00;
+        }
 
         x++;
 
-        /*if (x > (_width - 5)) {
+        if (x > (_width - 5)) {//TODO optional wrap
             x = 0;
             y += 8;
-        }*/
+        }
     }
 }
 

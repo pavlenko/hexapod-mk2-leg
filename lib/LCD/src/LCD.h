@@ -11,15 +11,6 @@ private:
     uint8_t _width;
     uint8_t _height;
     void (*_write)(uint8_t byte);
-
-    /**
-     * Draw single symbol, used in string
-     *
-     * @param symbol
-     * @param x
-     * @param y
-     */
-    void symbol(char symbol, uint8_t x, uint8_t y);
 public:
     /**
      * Initialize LCD buffer, size and draw callback

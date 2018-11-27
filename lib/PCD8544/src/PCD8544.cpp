@@ -2,6 +2,8 @@
 
 #include <SPI.h>
 
+#define CONSTRAIN(_val_, _min_, _max_) (_min_ > _val_ ? _min_ : (_max_ < _val_ ? _max_ : _val_))
+
 void PCD8544Class::initialize(PCD8544Pin_t reset, PCD8544Pin_t dc, SPISlaveSelect_t ss) {
     _reset = reset;
     _dc    = dc;
@@ -45,6 +47,14 @@ void PCD8544Class::write(PCD8544_DC dc, uint8_t data) {
     SPI.transfer(data);
 
     //*(_ss.PORT) |= _BV(_ss.SS);//TODO are this need ???
+}
+
+void PCD8544Class::setX(uint8_t value) {
+    this->write(PCD8544_DC_COMMAND, (uint8_t) PCD8544_SET_X(CONSTRAIN(value, 0, 83)));
+}
+
+void PCD8544Class::setY(uint8_t value) {
+    this->write(PCD8544_DC_COMMAND, (uint8_t) PCD8544_SET_Y(CONSTRAIN(value, 0, 5)));
 }
 
 PCD8544Class PCD8544;
