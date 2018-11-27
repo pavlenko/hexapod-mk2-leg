@@ -65,8 +65,8 @@ void LCD::string(const char *string, uint8_t x, uint8_t y) {
     }
 }
 
-void LCD::pixel(int x, int y, bool value) {
-    if (x >= 0 && x < _width && y >= 0 && y < _height) {
+void LCD::pixel(uint8_t x, uint8_t y, bool value) {
+    if (x < _width && y < _height) {
         int shift = (y % 8);
         int index = (x + (y / 8) * _width);
 
@@ -78,14 +78,13 @@ void LCD::pixel(int x, int y, bool value) {
     }
 }
 
-void LCD::line(int x0, int y0, int x1, int y1) {
+void LCD::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
     int diffX = abs(x1 - x0);
     int diffY = abs(y1 - y0);
 
     int stepX = (x0 > x1) ? -1 : 1;
     int stepY = (y0 > y1) ? -1 : 1;
 
-    //TODO check if this works
     diffY <<= 1; // diffY is now 2*diffY
     diffX <<= 1; // diffX is now 2*diffX
 
@@ -126,14 +125,18 @@ void LCD::line(int x0, int y0, int x1, int y1) {
 
 void LCD::rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
 //TODO not yet implemented
+    this->line(x1, y1, x1, y2);
+    this->line(x2, y1, x2, y2);
+    this->line(x1, y1, x2, y1);
+    this->line(x1, y2, x2, y2);
 }
 
-void LCD::circle(int x0, int y0, int radius) {
-    int x   = radius - 1;
-    int y   = 0;
-    int dx  = 1;
-    int dy  = 1;
-    int err = dx - (radius << 1);
+void LCD::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
+    int8_t x   = (uint8_t) (radius - 1);
+    int8_t y   = 0;
+    int8_t dx  = 1;
+    int8_t dy  = 1;
+    int8_t err = dx - (radius << 1);
 
     while (x >= y)
     {

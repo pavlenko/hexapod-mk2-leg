@@ -97,6 +97,7 @@ int main() {
     //lcd.clear();
     lcd.line(0, 0, 50, 20);
     lcd.circle(15, 15, 15);
+    lcd.rectangle(55, 0, 80, 20);
     lcd.string("HELLO", 0, 32);
     lcd.string("HELLO", 32, 34);
     lcd.flush();
