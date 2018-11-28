@@ -85,15 +85,31 @@ void toggle_port()
 
 static ServoMotor servos[4];
 
+/**
+ * NOP              0 0 0 0 0 0 0 0
+ * GET_MIN          0 0 1 0 0 0 i1 i0 Where i index of servo
+ * SET_MIN          0 0 1 1 0 0 i1 i0 Where i index of servo
+ * GET_MAX          0 1 0 0 0 0 i1 i0 Where i index of servo
+ * SET_MAX          0 1 0 1 0 0 i1 i0 Where i index of servo
+ * GET_ANGLE        0 1 1 0 0 0 i1 i0 Where i index of servo
+ * SET_ANGLE        0 1 1 1 0 0 i1 i0 Where i index of servo
+ * GET_MICROSECONDS 1 0 0 0 0 0 i1 i0 Where i index of servo
+ * SET_MICROSECONDS 1 0 0 1 0 0 i1 i0 Where i index of servo
+ */
+
 //TODO list of 16 commands
-#define COMMAND_GET_MIN          0x01
-#define COMMAND_SET_MIN          0x02
-#define COMMAND_GET_MAX          0x03
-#define COMMAND_SET_MAX          0x04
-#define COMMAND_GET_ANGLE        0x05
-#define COMMAND_SET_ANGLE        0x06
-#define COMMAND_GET_MICROSECONDS 0x07
-#define COMMAND_SET_MICROSECONDS 0x08
+#define COMMAND_GET_ENABLED      0x01 // 0b0001XXXX Where X is channel bit-mask
+#define COMMAND_SET_ENABLED      0x02 // 0b001EXXXX Where X is channel bit-mask, E boolean value enabled or not
+
+#define COMMAND_GET_MIN          0x01 // 0b01000WII Where I is channel index, W == 0
+#define COMMAND_SET_MIN          0x02 // 0b01000WII Where I is channel index, W == 1
+#define COMMAND_GET_MAX          0x03 // 0b01000WII Where I is channel index, W == 0
+#define COMMAND_SET_MAX          0x04 // 0b01000WII Where I is channel index, W == 1
+
+#define COMMAND_GET_ANGLE        0x05 // 0b01000WII Where I is channel index, W == 0
+#define COMMAND_SET_ANGLE        0x06 // 0b01000WII Where I is channel index, W == 1
+#define COMMAND_GET_MICROSECONDS 0x07 // 0b01000WII Where I is channel index, W == 0
+#define COMMAND_SET_MICROSECONDS 0x08 // 0b01000WII Where I is channel index, W == 1
 
 #define COMMAND_CALIBRATION_ENTER 0x09
 #define COMMAND_CALIBRATION_SAVE  0x0A
