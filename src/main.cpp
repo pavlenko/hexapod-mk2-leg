@@ -89,9 +89,7 @@ void toggle_port()
 
 void twiOnReceive()
 {
-    uint8_t command;
-
-    TWI.read(&command);
+    uint8_t command = TWI.readU08();
 
     switch (command) {
         case COMMAND_SERVO_ON:
