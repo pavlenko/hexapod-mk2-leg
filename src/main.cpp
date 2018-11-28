@@ -1,7 +1,36 @@
-#define SERVOMOTOR_USE_TIMER1 1
-#define SERVOMOTOR_USE_TIMER3 1
-#define SERVOMOTOR_USE_TIMER4 1
-#define SERVOMOTOR_USE_TIMER5 1
+/**
+ * MASTER:
+ *
+ * Get servo calibration:
+ * TWI.write(GET_CALIBRATION_MIN)
+ * TWI.write(SERVO_0)
+ * TWI.transmit(DRIVER_ADDRESS)
+ * val = TWI.read()
+ *
+ * Set set calibration:
+ * TWI.write(SET_CALIBRATION)
+ * TWI.transmit(DRIVER_ADDRESS)
+ *
+ * TWI.write(SET_CALIBRATION_MIN)
+ * TWI.write(SERVO_0)
+ * TWI.write(value)
+ * TWI.transmit(DRIVER_ADDRESS)
+ *
+ * TWI.write(COMMIT_CALIBRATION)
+ * TWI.transmit(DRIVER_ADDRESS)
+ *
+ * Set servo angle:
+ * TWI.write(SET_SERVO_ANGLE)
+ * TWI.write(SERVO_0)
+ * TWI.write(value)
+ * TWI.transmit(DRIVER_ADDRESS)
+ *
+ * SLAVE:
+ * IDLE -> ENABLE_SERVO_COMMAND -> IDLE
+ * IDLE -> ENTER_CALIBRATION -> CALIBRATION
+ * CALIBRATION -> SAVE_CALIBRATION -> SAVING_CALIBRATION -> IDLE
+ * CALIBRATION -> EXIT_CALIBRATION -> IDLE
+ */
 
 #include <EEPROM.h>
 #include <ES.h>
