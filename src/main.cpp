@@ -78,38 +78,77 @@ FSMState STATE_IDLE = FSMState();
 
 volatile uint8_t timer;
 
-void onTimer5CompareA() {
-    //TODO handle servo update
-}
-
 void toggle_port()
 {
     PORTA = ~PORTA;
 }
 
+static ServoMotor servos[4];
+
+//TODO list of 16 commands
+#define COMMAND_GET_MIN          0x01
+#define COMMAND_SET_MIN          0x02
+#define COMMAND_GET_MAX          0x03
+#define COMMAND_SET_MAX          0x04
+#define COMMAND_GET_ANGLE        0x05
+#define COMMAND_SET_ANGLE        0x06
+#define COMMAND_GET_MICROSECONDS 0x07
+#define COMMAND_SET_MICROSECONDS 0x08
+
+static volatile uint8_t command, index;
+
 void twiOnReceive()
 {
-    uint8_t command = TWI.readU08();
+    command = TWI.readU08();
 
     switch (command) {
-        case COMMAND_SERVO_ON:
-            mode = MODE_ACTIVE;
+        case COMMAND_GET_MIN:
+            index = TWI.readU08();
             break;
-        case COMMAND_CALIBRATE_ON:
-            mode = MODE_CALIBRATE;
+        case COMMAND_SET_MIN:
+            servos[TWI.readU08()].setMIN(TWI.readU16());
             break;
-        case COMMAND_SERVO_OFF:
-        case COMMAND_CALIBRATE_OFF:
-            mode = MODE_IDLE;
+        case COMMAND_GET_MAX:
+            index = TWI.readU08();
             break;
+        case COMMAND_SET_MAX:
+            servos[TWI.readU08()].setMAX(TWI.readU16());
+            break;
+        case COMMAND_GET_ANGLE:
+            index = TWI.readU08();
+            break;
+        case COMMAND_SET_ANGLE:
+            servos[TWI.readU08()].setAngle(TWI.readU16());
+            break;
+        case COMMAND_GET_MICROSECONDS:
+            index = TWI.readU08();
+            break;
+        case COMMAND_SET_MICROSECONDS:
+            servos[TWI.readU08()].setMicroseconds(TWI.readU16());
+            break;
+        default:
+            asm volatile("nop");
     }
 }
 
 void twiOnRequest() {
-    //TODO handle commands from TWI module
+    switch (command) {
+        case COMMAND_GET_MIN:
+            TWI.writeU16(index < 4 ? servos[index].getMIN() : 0);
+            break;
+        case COMMAND_GET_MAX:
+            TWI.writeU16(index < 4 ? servos[index].getMAX() : 0);
+            break;
+        case COMMAND_GET_ANGLE:
+            TWI.writeU16(index < 4 ? servos[index].getAngle() : 0);
+            break;
+        case COMMAND_GET_MICROSECONDS:
+            TWI.writeU16(index < 4 ? servos[index].getMicroseconds() : 0);
+            break;
+        default:
+            asm volatile("nop");
+    }
 }
-
-static ServoMotor servos[4];
 
 static uint8_t LCDBuffer[84 * (48 / 8)];
 
