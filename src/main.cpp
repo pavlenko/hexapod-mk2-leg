@@ -117,7 +117,7 @@ const static uint8_t logo[] PROGMEM = {
 };
 
 LCDBitmap_t _logo = {
-    .bitmap = logo,
+    .data   = logo,
     .width  = 88,
     .height = 37,
 };

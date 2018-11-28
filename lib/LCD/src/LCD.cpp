@@ -193,16 +193,6 @@ void LCD::bitmap(const uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t width, uin
     }
 }
 
-// Represents char "E"
-const static uint8_t bitmapH_8x5[] PROGMEM = {
-    0xFF, 0x80, 0xFF, 0x80, 0xFF,
-};
-
-// Represents char "M"
-const static uint8_t bitmapV_5x8[] PROGMEM = {
-    0xFF, 0x80, 0xFF, 0x080, 0xFF,
-};
-
 void LCD::bitmap(uint8_t x0, uint8_t y0, LCDBitmap_t bitmap) {
     auto scanX = (uint8_t) ((bitmap.width + 7) / 8);
     auto scanY = (uint8_t) ((bitmap.height + 7) / 8);
@@ -211,30 +201,28 @@ void LCD::bitmap(uint8_t x0, uint8_t y0, LCDBitmap_t bitmap) {
 
     for (uint8_t x = 0; x < bitmap.width; x++) {
         for (uint8_t y = 0; y < bitmap.height; y++) {
-            if (x & 7) {
-                // Shift byte - used in horizontal byte bitmaps
-                byte <<= 1;
+            if (bitmap.horizontal) {
+                if (x & 7) {
+                    // Shift byte - used in horizontal byte bitmaps
+                    byte = bitmap.msb ? byte << 1 : byte >> 1;
+                } else {
+                    // Load bitmap next byte
+                    byte = pgm_read_byte(&(bitmap.data)[y * scanY + x / 8]);
+                }
             } else {
-                // Load bitmap next byte
-                byte = pgm_read_byte(&(bitmap.data)[x * scanX + y / 8]);//TODO check
+                if (y & 7) {
+                    // Shift byte - used in vertical byte bitmaps
+                    byte = bitmap.msb ? byte << 1 : byte >> 1;
+                } else {
+                    // Load bitmap next byte
+                    byte = pgm_read_byte(&(bitmap.data)[x * scanX + y / 8]);
+                }
             }
 
-            if (y & 7) {
-                // Shift byte - used in vertical byte bitmaps
-                byte <<= 1;
+            if (bitmap.msb) {
+                this->pixel(x0 + x, y0 + y, (byte & 0x80) != 0);
             } else {
-                // Load bitmap next byte
-                byte = pgm_read_byte(&(bitmap.data)[y * scanY + x / 8]);//TODO check
-            }
-
-            if (byte & 0x80) {
-                // Set pixel for MSB? byte order
-                this->pixel(x0 + x, y0 + y, true);
-            }
-
-            if (byte & 0x01) {
-                // Set pixel for LSB? byte order
-                this->pixel(x0 + x, y0 + y, true);
+                this->pixel(x0 + x, y0 + y, (byte & 0x01) != 0);
             }
         }
     }
