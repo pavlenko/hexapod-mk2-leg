@@ -116,6 +116,12 @@ const static uint8_t logo[] PROGMEM = {
 
 };
 
+LCDBitmap_t _logo = {
+    .bitmap = logo,
+    .width  = 88,
+    .height = 37,
+};
+
 int main() {
     SPI.initialize({&DDRB, PIN4, PIN7, PIN5, PIN6});
 
@@ -128,7 +134,8 @@ int main() {
     //lcd.rectangle(55, 0, 80, 20);
     //lcd.string("HELLO", 0, 32);
     //lcd.string("HELLO", 32, 34);
-    lcd.bitmap(logo, 0, 0, 88, 37);
+    //lcd.bitmap(logo, 0, 0, 88, 37);
+    lcd.bitmap(0, 0, _logo);
     lcd.flush();
 
     //PCD8544.write("HELLO");

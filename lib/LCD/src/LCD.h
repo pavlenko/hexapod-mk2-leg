@@ -5,7 +5,7 @@
 
 //TODO define bitmap as structure below to store all config in one place
 typedef struct {
-    const uint8_t *bitmap;
+    const uint8_t *data;
     uint8_t width;
     uint8_t height;
     bool byteOrientation;
@@ -95,6 +95,8 @@ public:
      * @param vertical Byte orientation
      */
     void bitmap(const uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool vertical = false);
+
+    void bitmap(uint8_t x, uint8_t y, LCDBitmap_t bitmap);
 
     /**
      * Send buffer to display via draw callback
