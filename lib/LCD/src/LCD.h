@@ -3,6 +3,15 @@
 
 #include <stdint.h>
 
+//TODO define bitmap as structure below to store all config in one place
+typedef struct {
+    const uint8_t *bitmap;
+    uint8_t width;
+    uint8_t height;
+    bool byteOrientation;
+    bool byteEndian;
+} LCDBitmap_t;
+
 //TODO flush pass entry buffer to callback to allow reset x,y coordinates
 //TODO flush part of buffer by define x,y,w,h
 class LCD {

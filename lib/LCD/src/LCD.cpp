@@ -14,16 +14,17 @@ LCD::LCD(uint8_t *buffer, uint8_t width, uint8_t height, void (*write)(uint8_t))
 }
 
 void LCD::clear() {
-    for (int i = 0; i < _size; i++) {
+    for (uint16_t i = 0; i < _size; i++) {
         *(_buffer + i) = 0x00;
     }
 }
 
 void LCD::string(const char *string, uint8_t x, uint8_t y, bool wrap) {
-    int shift = (y % 8), index;
+    int shift = (y % 8);
+    uint16_t index;
 
     while (*string != 0x00) {
-        index = (x + (y / 8) * _width);
+        index = (uint16_t) (x + (y / 8) * _width);
 
         for (uint8_t i = 0; i < 5; i++) {
             uint8_t column = pgm_read_byte(&LCDFont5x7[(*string) - 0x20][i]);
@@ -170,15 +171,27 @@ void LCD::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
 }
 
 void LCD::bitmap(const uint8_t *bitmap, uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool vertical) {
-    //TODO calculate row shift, min row, max row
+    //TODO need to check
+    int16_t byteWidth = (width + 7) / 8; // Bitmap scanline pad = whole byte
+    uint8_t byte = 0;
 
-    for (int i = 0; i < (_width * _height / 8); i++) {
-        *(_buffer + (x * y)) = pgm_read_byte(&bitmap[i]);
+    for (int8_t j = 0; j < height; j++, y++) {
+        for (int8_t i = 0; i < width; i++ ) {
+            if (i & 7) {
+                //byte <<= 1;
+                byte >>= 1;
+            } else {
+                byte = pgm_read_byte(&bitmap[j * byteWidth + i / 8]);
+            }
+
+            //this->pixel(x + i, y, (byte & 0x80) == 0);
+            this->pixel(x + i, y, (byte & 0x01) == 0);
+        }
     }
 }
 
 void LCD::flush() {
-    for (int i = 0; i < _size; i++) {
+    for (uint16_t i = 0; i < _size; i++) {
         _write(*(_buffer + i));
     }
 }
