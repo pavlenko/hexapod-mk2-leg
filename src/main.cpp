@@ -95,6 +95,10 @@ static ServoMotor servos[4];
 #define COMMAND_GET_MICROSECONDS 0x07
 #define COMMAND_SET_MICROSECONDS 0x08
 
+#define COMMAND_CALIBRATION_ENTER 0x09
+#define COMMAND_CALIBRATION_SAVE  0x0A
+#define COMMAND_CALIBRATION_EXIT  0x0B
+
 static volatile uint8_t command, index;
 
 void twiOnReceive()
@@ -125,6 +129,16 @@ void twiOnReceive()
             break;
         case COMMAND_SET_MICROSECONDS:
             servos[TWI.readU08()].setMicroseconds(TWI.readU16());
+            break;
+        case COMMAND_CALIBRATION_ENTER:
+            //TODO stop servos
+            break;
+        case COMMAND_CALIBRATION_SAVE:
+            //TODO schedule save calibration
+            //TODO start servos
+            break;
+        case COMMAND_CALIBRATION_EXIT:
+            //TODO start servos
             break;
         default:
             asm volatile("nop");
