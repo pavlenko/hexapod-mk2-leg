@@ -42,38 +42,26 @@
 #include <Timer0.h>
 #include <TWI.h>
 
+#include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
 #include <stdint.h>
 #include <util/delay.h>
 
-#define EEPROM_SERVO1_MIN 0x00
-#define EEPROM_SERVO1_MAX 0x01
+uint16_t EEPROM_SERVO0_MIN EEMEM = 0;
+uint16_t EEPROM_SERVO0_MAX EEMEM = 0;
 
-#define EEPROM_SERVO2_MIN 0x02
-#define EEPROM_SERVO2_MAX 0x03
+uint16_t EEPROM_SERVO1_MIN EEMEM = 0;
+uint16_t EEPROM_SERVO1_MAX EEMEM = 0;
 
-#define EEPROM_SERVO3_MIN 0x04
-#define EEPROM_SERVO3_MAX 0x05
+uint16_t EEPROM_SERVO2_MIN EEMEM = 0;
+uint16_t EEPROM_SERVO2_MAX EEMEM = 0;
 
-#define EEPROM_SERVO4_MIN 0x06
-#define EEPROM_SERVO4_MAX 0x07
-
-#define MODE_IDLE      0
-#define MODE_ACTIVE    1
-#define MODE_CALIBRATE 2
-
-static volatile uint8_t mode;
+uint16_t EEPROM_SERVO3_MIN EEMEM = 0;
+uint16_t EEPROM_SERVO3_MAX EEMEM = 0;
 
 FSMState STATE_IDLE = FSMState();
-
-volatile uint8_t timer;
-
-void toggle_port()
-{
-    PORTA = ~PORTA;
-}
 
 static ServoMotor servos[4];
 
@@ -108,17 +96,17 @@ void twiOnReceive()
     if (command & COMMAND_CALIBRATION_SAVE) {
         EEPROM.start();
 
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[0].getMIN());
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[0].getMAX());
+        EEPROM.writeU16(EEPROM_SERVO0_MIN, servos[0].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO0_MAX, servos[0].getMAX());
 
         EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[1].getMIN());
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[1].getMAX());
+        EEPROM.writeU16(EEPROM_SERVO1_MAX, servos[1].getMAX());
 
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[2].getMIN());
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[2].getMAX());
+        EEPROM.writeU16(EEPROM_SERVO2_MIN, servos[2].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO2_MAX, servos[2].getMAX());
 
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[3].getMIN());
-        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[3].getMAX());
+        EEPROM.writeU16(EEPROM_SERVO3_MIN, servos[3].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO3_MAX, servos[3].getMAX());
 
         EEPROM.flush();
     }
@@ -213,27 +201,10 @@ int main() {
     TWI.setOnRequestHandler(twiOnRequest);
 
     // Read calibration from EEPROM & initialize servo motors
-    uint16_t min, max;
-
-    EEPROM.read(EEPROM_SERVO1_MIN, &min);
-    EEPROM.read(EEPROM_SERVO1_MAX, &max);
-
-    servos[0].attach(&PORTB, PB0, min, max);
-
-    EEPROM.read(EEPROM_SERVO2_MIN, &min);
-    EEPROM.read(EEPROM_SERVO2_MAX, &max);
-
-    servos[1].attach(&PORTB, PB1, min, max);
-
-    EEPROM.read(EEPROM_SERVO3_MIN, &min);
-    EEPROM.read(EEPROM_SERVO3_MAX, &max);
-
-    servos[2].attach(&PORTB, PB2, min, max);
-
-    EEPROM.read(EEPROM_SERVO4_MIN, &min);
-    EEPROM.read(EEPROM_SERVO4_MAX, &max);
-
-    servos[3].attach(&PORTB, PB3, min, max);
+    servos[0].attach(&PORTB, PB0, EEPROM.readU16(EEPROM_SERVO0_MIN), EEPROM.readU16(EEPROM_SERVO0_MAX));
+    servos[1].attach(&PORTB, PB1, EEPROM.readU16(EEPROM_SERVO1_MIN), EEPROM.readU16(EEPROM_SERVO1_MAX));
+    servos[2].attach(&PORTB, PB2, EEPROM.readU16(EEPROM_SERVO2_MIN), EEPROM.readU16(EEPROM_SERVO2_MAX));
+    servos[3].attach(&PORTB, PB3, EEPROM.readU16(EEPROM_SERVO3_MIN), EEPROM.readU16(EEPROM_SERVO3_MAX));
 
     // Initialize finite state machine
     FSM.initialize(STATE_IDLE);
