@@ -66,14 +66,6 @@
 
 static volatile uint8_t mode;
 
-#define COMMAND_NONE          0x00
-#define COMMAND_SERVO_ON      0x10
-//TODO servo related commands
-#define COMMAND_SERVO_OFF     0x1F
-#define COMMAND_CALIBRATE_ON  0x20
-//TODO calibrate related command
-#define COMMAND_CALIBRATE_OFF 0x2F
-
 FSMState STATE_IDLE = FSMState();
 
 volatile uint8_t timer;
@@ -85,103 +77,71 @@ void toggle_port()
 
 static ServoMotor servos[4];
 
-/**
- * NOP              0 0 0 0 0 0 0 0
- * GET_MIN          0 0 1 0 0 0 i1 i0 Where i index of servo
- * SET_MIN          0 0 1 1 0 0 i1 i0 Where i index of servo
- * GET_MAX          0 1 0 0 0 0 i1 i0 Where i index of servo
- * SET_MAX          0 1 0 1 0 0 i1 i0 Where i index of servo
- * GET_ANGLE        0 1 1 0 0 0 i1 i0 Where i index of servo
- * SET_ANGLE        0 1 1 1 0 0 i1 i0 Where i index of servo
- * GET_MICROSECONDS 1 0 0 0 0 0 i1 i0 Where i index of servo
- * SET_MICROSECONDS 1 0 0 1 0 0 i1 i0 Where i index of servo
- */
+#define COMMAND_NOP                 0b00000000 // 0b00000000 No operation
+#define COMMAND_CONTROL             0b00010000 // 0b0001000E Where E is boolean enable/disable control angle get/set
+#define COMMAND_CALIBRATION_MIN_GET 0b00100000 // 0b00100RXX Where X is channel index, R == 0
+#define COMMAND_CALIBRATION_MIN_SET 0b00100100 // 0b00100WXX Where X is channel index, W == 1
+#define COMMAND_CALIBRATION_MAX_GET 0b00101000 // 0b00101RXX Where X is channel index, R == 0
+#define COMMAND_CALIBRATION_MAX_SET 0b00101100 // 0b00101WXX Where X is channel index, W == 1
+#define COMMAND_CALIBRATION_SAVE    0b00100000 // 0b00100000 Store calibration values into EEPROM
+#define COMMAND_ANGLE_GET           0b00110000 // 0b00110RXX Where X is channel index, R == 0
+#define COMMAND_ANGLE_SET           0b00110100 // 0b00110WXX Where X is channel index, W == 1
+#define COMMAND_MICROSECONDS_GET    0b00111000 // 0b00111RXX Where X is channel index, R == 0
+#define COMMAND_MICROSECONDS_SET    0b00111100 // 0b00111WXX Where X is channel index, W == 1
 
-#define COMMAND_CONTROL          0b00000010 // 0b0000001E Where E is boolean enable/disable control angle get/set
-#define COMMAND_GET_ENABLED      0x01 // 0b0001XXXX Where X is channel bit-mask
-#define COMMAND_SET_ENABLED      0x02 // 0b001EXXXX Where X is channel bit-mask, E boolean value enabled or not
-
-#define COMMAND_GET_MIN          0x01 // 0b01000WII Where I is channel index, W == 0
-#define COMMAND_SET_MIN          0x02 // 0b01000WII Where I is channel index, W == 1
-#define COMMAND_GET_MAX          0x03 // 0b01001WII Where I is channel index, W == 0
-#define COMMAND_SET_MAX          0x04 // 0b01001WII Where I is channel index, W == 1
-
-#define COMMAND_GET_ANGLE        0x05 // 0b01010WII Where I is channel index, W == 0
-#define COMMAND_SET_ANGLE        0x06 // 0b01010WII Where I is channel index, W == 1
-#define COMMAND_GET_MICROSECONDS 0x07 // 0b01011WII Where I is channel index, W == 0
-#define COMMAND_SET_MICROSECONDS 0x08 // 0b01011WII Where I is channel index, W == 1
-
-#define COMMAND_CALIBRATION_ENTER 0x09 // 0b10000000 Disable handle commands GET/SET ANGLE and GET/SET MICROSECONDS
-#define COMMAND_CALIBRATION_SAVE  0x0A // 0b10000001 Save current min/max values to EEPROM
-#define COMMAND_CALIBRATION_EXIT  0x0B // 0b10000010 Enable handle commands GET/SET ANGLE and GET/SET MICROSECONDS
-
-static volatile uint8_t command, index;
+static volatile uint8_t command = COMMAND_NOP;
 static volatile bool control = false;
 
 void twiOnReceive()
 {
     command = TWI.readU08();
 
-    if (COMMAND_CONTROL & command) {
+    if (command & COMMAND_CONTROL) {
         control = (bool) (command & 0x01);
     }
+    if (command & COMMAND_CALIBRATION_MIN_SET) {
+        servos[(command & 0x3)].setMIN(TWI.readU16());
+    }
+    if (command & COMMAND_CALIBRATION_MAX_SET) {
+        servos[(command & 0x3)].setMAX(TWI.readU16());
+    }
+    if (command & COMMAND_CALIBRATION_SAVE) {
+        EEPROM.start();
 
-    switch (command) {
-        case COMMAND_GET_MIN:
-            index = TWI.readU08();
-            break;
-        case COMMAND_SET_MIN:
-            servos[TWI.readU08()].setMIN(TWI.readU16());
-            break;
-        case COMMAND_GET_MAX:
-            index = TWI.readU08();
-            break;
-        case COMMAND_SET_MAX:
-            servos[TWI.readU08()].setMAX(TWI.readU16());
-            break;
-        case COMMAND_GET_ANGLE:
-            index = TWI.readU08();
-            break;
-        case COMMAND_SET_ANGLE:
-            servos[TWI.readU08()].setAngle(TWI.readU16());
-            break;
-        case COMMAND_GET_MICROSECONDS:
-            index = TWI.readU08();
-            break;
-        case COMMAND_SET_MICROSECONDS:
-            servos[TWI.readU08()].setMicroseconds(TWI.readU16());
-            break;
-        case COMMAND_CALIBRATION_ENTER:
-            //TODO stop servos
-            break;
-        case COMMAND_CALIBRATION_SAVE:
-            //TODO schedule save calibration
-            //TODO start servos
-            break;
-        case COMMAND_CALIBRATION_EXIT:
-            //TODO start servos
-            break;
-        default:
-            asm volatile("nop");
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[0].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[0].getMAX());
+
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[1].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[1].getMAX());
+
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[2].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[2].getMAX());
+
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[3].getMIN());
+        EEPROM.writeU16(EEPROM_SERVO1_MIN, servos[3].getMAX());
+
+        EEPROM.flush();
+    }
+    if (control && command & COMMAND_ANGLE_SET) {
+        servos[(command & 0x3)].setAngle(TWI.readU16());
+    }
+    if (control && command & COMMAND_MICROSECONDS_SET) {
+        servos[(command & 0x3)].setMicroseconds(TWI.readU16());
     }
 }
 
 void twiOnRequest() {
-    switch (command) {
-        case COMMAND_GET_MIN:
-            TWI.writeU16(index < 4 ? servos[index].getMIN() : 0);
-            break;
-        case COMMAND_GET_MAX:
-            TWI.writeU16(index < 4 ? servos[index].getMAX() : 0);
-            break;
-        case COMMAND_GET_ANGLE:
-            TWI.writeU16(index < 4 ? servos[index].getAngle() : 0);
-            break;
-        case COMMAND_GET_MICROSECONDS:
-            TWI.writeU16(index < 4 ? servos[index].getMicroseconds() : 0);
-            break;
-        default:
-            asm volatile("nop");
+    if (command & COMMAND_CALIBRATION_MIN_GET) {
+        TWI.writeU16(servos[(command & 0x3)].getMIN());
+    }
+    if (command & COMMAND_CALIBRATION_MAX_GET) {
+        TWI.writeU16(servos[(command & 0x3)].getMAX());
+    }
+    if (command & COMMAND_ANGLE_GET) {
+        TWI.writeU16(servos[(command & 0x3)].getAngle());
+    }
+    if (command & COMMAND_MICROSECONDS_GET) {
+        TWI.writeU16(servos[(command & 0x3)].getMicroseconds());
     }
 }
 
