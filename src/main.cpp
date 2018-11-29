@@ -97,29 +97,34 @@ static ServoMotor servos[4];
  * SET_MICROSECONDS 1 0 0 1 0 0 i1 i0 Where i index of servo
  */
 
-//TODO list of 16 commands
+#define COMMAND_CONTROL          0b00000010 // 0b0000001E Where E is boolean enable/disable control angle get/set
 #define COMMAND_GET_ENABLED      0x01 // 0b0001XXXX Where X is channel bit-mask
 #define COMMAND_SET_ENABLED      0x02 // 0b001EXXXX Where X is channel bit-mask, E boolean value enabled or not
 
 #define COMMAND_GET_MIN          0x01 // 0b01000WII Where I is channel index, W == 0
 #define COMMAND_SET_MIN          0x02 // 0b01000WII Where I is channel index, W == 1
-#define COMMAND_GET_MAX          0x03 // 0b01000WII Where I is channel index, W == 0
-#define COMMAND_SET_MAX          0x04 // 0b01000WII Where I is channel index, W == 1
+#define COMMAND_GET_MAX          0x03 // 0b01001WII Where I is channel index, W == 0
+#define COMMAND_SET_MAX          0x04 // 0b01001WII Where I is channel index, W == 1
 
-#define COMMAND_GET_ANGLE        0x05 // 0b01000WII Where I is channel index, W == 0
-#define COMMAND_SET_ANGLE        0x06 // 0b01000WII Where I is channel index, W == 1
-#define COMMAND_GET_MICROSECONDS 0x07 // 0b01000WII Where I is channel index, W == 0
-#define COMMAND_SET_MICROSECONDS 0x08 // 0b01000WII Where I is channel index, W == 1
+#define COMMAND_GET_ANGLE        0x05 // 0b01010WII Where I is channel index, W == 0
+#define COMMAND_SET_ANGLE        0x06 // 0b01010WII Where I is channel index, W == 1
+#define COMMAND_GET_MICROSECONDS 0x07 // 0b01011WII Where I is channel index, W == 0
+#define COMMAND_SET_MICROSECONDS 0x08 // 0b01011WII Where I is channel index, W == 1
 
-#define COMMAND_CALIBRATION_ENTER 0x09
-#define COMMAND_CALIBRATION_SAVE  0x0A
-#define COMMAND_CALIBRATION_EXIT  0x0B
+#define COMMAND_CALIBRATION_ENTER 0x09 // 0b10000000 Disable handle commands GET/SET ANGLE and GET/SET MICROSECONDS
+#define COMMAND_CALIBRATION_SAVE  0x0A // 0b10000001 Save current min/max values to EEPROM
+#define COMMAND_CALIBRATION_EXIT  0x0B // 0b10000010 Enable handle commands GET/SET ANGLE and GET/SET MICROSECONDS
 
 static volatile uint8_t command, index;
+static volatile bool control = false;
 
 void twiOnReceive()
 {
     command = TWI.readU08();
+
+    if (COMMAND_CONTROL & command) {
+        control = (bool) (command & 0x01);
+    }
 
     switch (command) {
         case COMMAND_GET_MIN:
