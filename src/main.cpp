@@ -49,6 +49,8 @@
 #include <stdint.h>
 #include <util/delay.h>
 
+#define SERVO_COUNT 4
+
 uint16_t EEPROM_SERVO0_MIN EEMEM = 0;
 uint16_t EEPROM_SERVO0_MAX EEMEM = 0;
 
@@ -63,7 +65,7 @@ uint16_t EEPROM_SERVO3_MAX EEMEM = 0;
 
 FSMState STATE_IDLE = FSMState();
 
-static ServoMotor servos[4];
+static ServoMotor servos[SERVO_COUNT];
 
 #define COMMAND_NOP                 0b00000000 // 0b00000000 No operation
 #define COMMAND_CONTROL             0b00010000 // 0b0001000E Where E is boolean enable/disable control angle get/set
@@ -77,11 +79,33 @@ static ServoMotor servos[4];
 #define COMMAND_MICROSECONDS_GET    0b00111000 // 0b00111RXX Where X is channel index, R == 0
 #define COMMAND_MICROSECONDS_SET    0b00111100 // 0b00111WXX Where X is channel index, W == 1
 
+typedef struct {
+    uint8_t command;
+    union {
+        uint32_t argumentU32;
+        uint16_t argumentU16A;
+        uint16_t argumentU16B;
+        uint8_t argumentU08A;
+        uint8_t argumentU08B;
+        uint8_t argumentU08C;
+        uint8_t argumentU08D;
+    };
+} Command_t;
+
+static Command_t commandsBufferData[SERVO_COUNT];
+static volatile uint8_t commandsBufferIndex  = 0;
+static volatile uint8_t commandsBufferLength = 0;
+
 static volatile uint8_t command = COMMAND_NOP;
 static volatile bool control = false;
 
 void twiOnReceive()
 {
+    while (TWI_ERROR_READ != TWI.getError()) {
+        //TODO read commands to command buffer
+        //TODO command can have 2 arguments with total 32 bit size
+    }
+
     command = TWI.readU08();
 
     if (command & COMMAND_CONTROL) {
