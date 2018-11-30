@@ -199,9 +199,9 @@ void LCD::bitmap(uint8_t x0, uint8_t y0, LCDBitmap_t bitmap) {
 
     uint8_t byte = 0;
 
-    for (uint8_t x = 0; x < bitmap.width; x++) {
+    if (bitmap.horizontal) {
         for (uint8_t y = 0; y < bitmap.height; y++) {
-            if (bitmap.horizontal) {
+            for (uint8_t x = 0; x < bitmap.width; x++) {
                 if (x & 7) {
                     // Shift byte - used in horizontal byte bitmaps
                     byte = bitmap.msb ? byte << 1 : byte >> 1;
@@ -209,7 +209,17 @@ void LCD::bitmap(uint8_t x0, uint8_t y0, LCDBitmap_t bitmap) {
                     // Load bitmap next byte
                     byte = pgm_read_byte(&(bitmap.data)[y * scanY + x / 8]);
                 }
-            } else {
+
+                if (bitmap.msb) {
+                    this->pixel(x0 + x, y0 + y, (byte & 0x80) != 0);
+                } else {
+                    this->pixel(x0 + x, y0 + y, (byte & 0x01) != 0);
+                }
+            }
+        }
+    } else {
+        for (uint8_t x = 0; x < bitmap.width; x++) {
+            for (uint8_t y = 0; y < bitmap.height; y++) {
                 if (y & 7) {
                     // Shift byte - used in vertical byte bitmaps
                     byte = bitmap.msb ? byte << 1 : byte >> 1;
@@ -217,12 +227,12 @@ void LCD::bitmap(uint8_t x0, uint8_t y0, LCDBitmap_t bitmap) {
                     // Load bitmap next byte
                     byte = pgm_read_byte(&(bitmap.data)[x * scanX + y / 8]);
                 }
-            }
 
-            if (bitmap.msb) {
-                this->pixel(x0 + x, y0 + y, (byte & 0x80) != 0);
-            } else {
-                this->pixel(x0 + x, y0 + y, (byte & 0x01) != 0);
+                if (bitmap.msb) {
+                    this->pixel(x0 + x, y0 + y, (byte & 0x80) != 0);
+                } else {
+                    this->pixel(x0 + x, y0 + y, (byte & 0x01) != 0);
+                }
             }
         }
     }
